@@ -1,0 +1,18 @@
+<view wx:if="{{loading}}" class="card">加载活动中…</view>
+<view wx:if="{{error}}" class="card"><view class="muted">{{error}}</view></view>
+<block wx:if="{{activity}}">
+ <view class="card">
+  <view class="muted">{{activity.category}} · 青年公社</view>
+  <view class="heading" style="margin-top:18rpx;">{{activity.title}}</view>
+  <view class="info">🗓 {{activity.startDate}} {{activity.startTime}}</view>
+  <view class="info">📍 {{activity.location}}</view>
+ </view>
+ <view class="card"><view class="section-title">关于这次活动</view><view class="desc">{{activity.description||'与志同道合的朋友相聚，交流与成长。'}}</view></view>
+ <view class="card">
+  <view wx:if="{{myStatus==='applied'}}" class="success">✓ 你已报名</view>
+  <button wx:if="{{myStatus==='applied'}}" disabled="{{busy}}" bindtap="cancel">取消报名</button>
+  <button wx:elif="{{myStatus==='not_registered'}}" type="primary" bindtap="register">先注册成为会员</button>
+  <button wx:else type="primary" disabled="{{busy}}" loading="{{busy}}" bindtap="apply">立即报名</button>
+  <view class="muted" style="margin-top:18rpx;">活动报名不涉及扑克牌局输赢或现金奖励。</view>
+ </view>
+</block>
