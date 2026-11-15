@@ -32,5 +32,6 @@
         "text": "我的"
       }
     ]
-  }
+  },
+  "lazyCodeLoading": "requiredComponents"
 }
