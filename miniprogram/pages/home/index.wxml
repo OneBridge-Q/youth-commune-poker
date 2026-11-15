@@ -16,6 +16,10 @@
  <view class="muted" style="margin-top:14rpx;">注册档案，报名活动，记录属于自己的成长</view>
  <button type="primary" style="margin-top:24rpx;" bindtap="goRegister">立即加入</button>
 </view>
+<view class="card" bindtap="goActivities">
+ <view class="heading">青年公社活动 ›</view>
+ <view class="muted">社交交流 · 知识分享 · 户外运动 · 创业共创</view>
+</view>
 <view wx:if="{{registered}}" class="card">
  <view class="row"><text>技术分</text><text>{{skillPoints}}</text></view>
  <view class="row"><text>兑换分</text><text>{{rewardPoints}}</text></view>
