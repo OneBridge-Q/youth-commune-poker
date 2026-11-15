@@ -1,0 +1,20 @@
+<view class="card">
+  <view class="muted">YOUTH COMMUNE · 青年公社</view>
+  <view class="heading">从认识彼此开始</view>
+  <view class="muted" style="margin-top:16rpx;">注册成为青年公社会员，参与活动、认识同行者、记录成长。</view>
+</view>
+<view class="card">
+  <view class="heading" style="font-size:34rpx;">创建会员档案</view>
+  <view class="field-title">你的昵称</view>
+  <input class="nickname-input" value="{{nickname}}" maxlength="32" placeholder="2–16个字符，可使用中文昵称" bindinput="onNickname"/>
+  <view class="muted" style="margin-top:16rpx;">目前只需要昵称，不收集手机号、真实姓名。</view>
+  <checkbox-group bindchange="onConsent" style="margin-top:32rpx;">
+    <label class="consent-line">
+      <checkbox value="agreed" checked="{{agreed}}" color="#202B3C"/>
+      <text>我已阅读并同意以下会员注册说明</text>
+    </label>
+  </checkbox-group>
+  <view class="policy">为创建会员档案，我们会保存你的微信账户标识、主动填写的昵称、注册确认记录，以及你后续主动参与的活动和成长记录。用于会员身份识别、活动管理及个人成长展示。可向青年公社运营方申请查阅、更正或删除个人资料。注册不会自动获得管理员权限，也不会自动产生积分或其他奖励。</view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <button type="primary" disabled="{{submitting}}" loading="{{submitting}}" bindtap="submit" style="margin-top:30rpx;">确认并加入青年公社</button>
+</view>
