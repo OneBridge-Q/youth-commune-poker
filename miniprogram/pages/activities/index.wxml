@@ -1,0 +1,11 @@
+<view class="card"><view class="muted">YOUTH COMMUNE · 青年公社</view><view class="heading">一起参与，一起成长</view><view class="muted">从一次相遇，开始新的可能</view></view>
+<scroll-view scroll-x="true" class="filter"><view class="filter-inner"><view wx:for="{{categories}}" wx:key="*this" data-value="{{item}}" bindtap="chooseCategory" class="filter-chip {{selected===item?'selected':''}}">{{item}}</view></view></scroll-view>
+<view wx:if="{{loading}}" class="card"><view class="muted">活动加载中…</view></view>
+<view wx:if="{{error}}" class="card"><view class="error">{{error}}</view><button size="mini" bindtap="load">重试</button></view>
+<view wx:for="{{visible}}" wx:key="id" class="card activity-card" data-id="{{item.id}}" bindtap="open">
+ <view class="row"><text class="category">{{item.category}}</text><text class="muted">{{item.startDate}} {{item.startTime}}</text></view>
+ <view class="activity-title">{{item.title}}</view>
+ <view class="muted">📍 {{item.location}}</view>
+ <view class="activity-more">查看详情与报名 ›</view>
+</view>
+<view wx:if="{{!loading&&!error&&!visible.length}}" class="card"><view class="muted">这个分类暂时没有活动，敬请期待。</view></view>
