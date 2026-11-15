@@ -1,1 +1,5 @@
 page{background:#f5f6f8;color:#202b3c;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif}.card{margin:24rpx;padding:32rpx;border-radius:24rpx;background:#fff}.muted{color:#78818c;font-size:26rpx}.heading{font-size:40rpx;font-weight:700}.row{display:flex;justify-content:space-between;margin-top:18rpx}
+.member-head{display:flex;align-items:center;gap:24rpx;margin-top:12rpx}
+.member-avatar{width:112rpx;height:112rpx;border-radius:50%;flex-shrink:0;background:#edf0f5}
+.member-info{flex:1;min-width:0}
+.profile-edit{text-align:right;color:#51637f;font-size:27rpx;padding-top:20rpx}
