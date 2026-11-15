@@ -1,7 +1,13 @@
 <view class="card">
- <view class="heading">{{registered?nickname:'个人中心'}}</view>
- <view wx:if="{{registered}}" class="muted">会员编号：{{memberNo}}</view>
- <view wx:else class="muted">注册成为会员，开始记录你的青年公社旅程</view>
+ <view class="member-head">
+  <image wx:if="{{registered&&avatarSrc}}" class="member-avatar" src="{{avatarSrc}}" mode="aspectFill"/>
+  <view class="member-info">
+   <view class="heading">{{registered?nickname:'个人中心'}}</view>
+   <view wx:if="{{registered}}" class="muted">会员编号：{{memberNo}}</view>
+   <view wx:else class="muted">注册成为会员，开始记录你的青年公社旅程</view>
+  </view>
+ </view>
+ <view wx:if="{{registered}}" class="profile-edit" bindtap="editProfile">编辑头像与昵称 ›</view>
 </view>
 <view wx:if="{{!registered}}" class="card">
  <view class="heading" style="font-size:32rpx;">加入青年公社</view>
