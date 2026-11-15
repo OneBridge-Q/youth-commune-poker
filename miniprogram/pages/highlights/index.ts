@@ -9,5 +9,6 @@ Page({
    this.setData({total:data.total||0,counts:Object.keys(names).map(k=>({name:names[k],count:(data.counts||{})[k]||0})),recent:(data.recent||[]).map((x:any)=>({id:x.id,name:names[x.category]||x.category})),partial:!!data.partial});
   }catch(e){this.setData({error:'数据加载失败，请检查云函数及权限'});}
   finally{this.setData({loading:false});}
- }
+ },
+ openMoment(e:any){const id=e.currentTarget.dataset.id;if(id)wx.navigateTo({url:'/pages/moment/index?type=hand&id='+encodeURIComponent(id)});}
 })
