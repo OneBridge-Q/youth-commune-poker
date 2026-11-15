@@ -1,0 +1,21 @@
+const cloud = require('wx-server-sdk');
+cloud.init({env: cloud.DYNAMIC_CURRENT_ENV});
+const db = cloud.database();
+const TYPES = new Set(['straight_flush','four_of_a_kind','full_house','flush','straight','three_of_a_kind','two_pair','one_pair','high_card']);
+exports.main = async (event) => {
+  const openid = cloud.getWXContext().OPENID;
+  if (!openid) throw new Error('UNAUTHENTICATED');
+  const actor = await db.collection('members').where({_openid:openid}).limit(1).get();
+  if (!actor.data.length || !['admin','superadmin'].includes(actor.data[0].role)) throw new Error('FORBIDDEN');
+  if (event.action !== 'create') throw new Error('UNSUPPORTED_ACTION');
+  const {memberId,storeId,sessionId=null,tableId=null,occurredAt,category,note=''} = event;
+  if (typeof memberId!=='string'||!memberId.trim()||typeof storeId!=='string'||!storeId.trim()||!TYPES.has(category)) throw new Error('INVALID_INPUT');
+  if (typeof occurredAt!=='string'||Number.isNaN(Date.parse(occurredAt))) throw new Error('INVALID_DATE');
+  if (typeof note!=='string'||note.length>500) throw new Error('INVALID_NOTE');
+  if (actor.data[0].role!=='superadmin' && actor.data[0].storeId!==storeId) throw new Error('WRONG_STORE');
+  const member = await db.collection('members').doc(memberId).get().catch(()=>null);
+  if (!member || !member.data) throw new Error('MEMBER_NOT_FOUND');
+  const data = {memberId,storeId,sessionId,tableId,occurredAt:new Date(occurredAt),category,note,source:'admin_manual',status:'pending',actionDataStatus:'not_collected',createdBy:actor.data[0]._id,createdAt:db.serverDate(),updatedAt:db.serverDate()};
+  const result=await db.collection('hand_records').add({data});
+  return {id:result._id,status:'pending'};
+};
