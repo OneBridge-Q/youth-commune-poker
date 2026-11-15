@@ -1,0 +1,5 @@
+.field-title{font-size:30rpx;font-weight:600;margin-top:36rpx;margin-bottom:20rpx}
+.nickname-input{padding:22rpx 18rpx;border:1rpx solid #dce2e9;border-radius:12rpx;font-size:30rpx}
+.consent-line{display:flex;align-items:center;font-size:27rpx;line-height:1.6}
+.policy{margin-top:18rpx;padding:22rpx;border-radius:12rpx;background:#f4f6f9;color:#647082;font-size:24rpx;line-height:1.8}
+.error{margin-top:16rpx;color:#c43939;font-size:26rpx}
