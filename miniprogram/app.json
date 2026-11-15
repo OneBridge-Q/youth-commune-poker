@@ -1,0 +1,31 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/ranking/index",
+    "pages/profile/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "青年公社 Poker Club",
+    "navigationBarBackgroundColor": "#202B3C",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f6f8"
+  },
+  "tabBar": {
+    "color": "#8A9099",
+    "selectedColor": "#202B3C",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/ranking/index",
+        "text": "天梯"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  }
+}
