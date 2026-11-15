@@ -1,1 +1,10 @@
-{"miniprogramRoot":"miniprogram/","cloudfunctionRoot":"cloudfunctions/","projectname":"youth-commune-poker","appid":"touristappid","setting":{"es6":true,"minified":true}}
+{
+  "miniprogramRoot": "miniprogram/",
+  "cloudfunctionRoot": "cloudfunctions/",
+  "projectname": "youth-commune-poker",
+  "appid": "wxbc5c812d763e382f",
+  "setting": {
+    "es6": true,
+    "minified": true
+  }
+}
