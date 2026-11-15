@@ -1,1 +1,1 @@
-<view class="card"><view class="heading">个人中心</view><view class="muted">{{message}}</view></view>
+<view class="card"><view class="heading">个人中心</view><view class="muted">{{message}}</view></view><view class="card" bindtap="openHighlights"><view class="heading">我的精彩手牌 ›</view><view class="muted">已认证记录与分享海报</view></view><view wx:if="{{isAdmin}}" class="card" bindtap="openAdmin"><view class="heading">管理员工作台 ›</view><view class="muted">录入、审核与撤销精彩手牌</view></view>
