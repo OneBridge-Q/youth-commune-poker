@@ -6,7 +6,8 @@
     "pages/highlights/index",
     "pages/moment/index",
     "pages/admin-highlights/index",
-    "pages/admin-champions/index"
+    "pages/admin-champions/index",
+    "pages/register/index"
   ],
   "window": {
     "navigationBarTitleText": "青年公社 Poker Club",
