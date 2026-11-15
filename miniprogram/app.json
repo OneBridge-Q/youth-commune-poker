@@ -2,7 +2,8 @@
   "pages": [
     "pages/home/index",
     "pages/ranking/index",
-    "pages/profile/index"
+    "pages/profile/index",
+    "pages/highlights/index"
   ],
   "window": {
     "navigationBarTitleText": "青年公社 Poker Club",
