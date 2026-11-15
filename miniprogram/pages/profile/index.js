@@ -1,1 +1,1 @@
-Page({data:{message:'会员档案与积分流水即将上线。'}});
+Page({data:{message:'会员档案与积分流水即将上线。',isAdmin:false},async onShow(){try{const r=await wx.cloud.callFunction({name:'adminProfile'});this.setData({isAdmin:!!(r.result&&r.result.role)});}catch(e){this.setData({isAdmin:false});}},openAdmin(){wx.navigateTo({url:'/pages/admin-highlights/index'});},openHighlights(){wx.navigateTo({url:'/pages/highlights/index'});}});
