@@ -1,0 +1,1 @@
+page{background:#f5f6f8;color:#202b3c;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif}.card{margin:24rpx;padding:32rpx;border-radius:24rpx;background:#fff}.muted{color:#78818c;font-size:26rpx}.heading{font-size:40rpx;font-weight:700}.row{display:flex;justify-content:space-between;margin-top:18rpx}
