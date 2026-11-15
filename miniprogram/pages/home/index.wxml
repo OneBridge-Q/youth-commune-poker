@@ -1,1 +1,21 @@
-<view class="card"><view class="muted">青年公社 · POKER CLUB</view><view class="heading">{{nickname}}</view><view class="muted">{{rank}}</view></view><view class="card"><view class="row"><text>技术分</text><text>{{skillPoints}}</text></view><view class="row"><text>兑换分</text><text>{{rewardPoints}}</text></view></view><view wx:if="{{loading}}" class="card">正在加载…</view><view wx:if="{{error}}" class="card">{{error}}</view><view class="card" bindtap="goHighlights"><view class="heading">荣耀时刻</view><view class="muted">精彩手牌 · 分享海报 ›</view></view>
+<view class="card">
+ <view class="muted">青年公社 · YOUTH COMMUNE</view>
+ <view class="heading">{{registered?nickname:'欢迎来到青年公社'}}</view>
+ <view class="muted" wx:if="{{registered}}">{{rank}} · {{memberNo}}</view>
+ <view class="muted" wx:else>认识同行者，一起参与、创造与成长</view>
+</view>
+<view wx:if="{{loading}}" class="card">正在加载…</view>
+<view wx:if="{{error}}" class="card">{{error}}</view>
+<view wx:if="{{!loading&&!registered}}" class="card">
+ <view class="heading" style="font-size:34rpx;">成为青年公社会员</view>
+ <view class="muted" style="margin-top:14rpx;">注册档案，报名活动，记录属于自己的成长</view>
+ <button type="primary" style="margin-top:24rpx;" bindtap="goRegister">立即加入</button>
+</view>
+<view wx:if="{{registered}}" class="card">
+ <view class="row"><text>技术分</text><text>{{skillPoints}}</text></view>
+ <view class="row"><text>兑换分</text><text>{{rewardPoints}}</text></view>
+</view>
+<view wx:if="{{registered}}" class="card" bindtap="goHighlights">
+ <view class="heading">荣耀时刻 ›</view>
+ <view class="muted">精彩手牌 · 分享海报</view>
+</view>
