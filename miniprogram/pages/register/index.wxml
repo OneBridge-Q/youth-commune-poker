@@ -1,20 +1,28 @@
 <view class="card">
   <view class="muted">YOUTH COMMUNE · 青年公社</view>
-  <view class="heading">从认识彼此开始</view>
-  <view class="muted" style="margin-top:16rpx;">注册成为青年公社会员，参与活动、认识同行者、记录成长。</view>
+  <view class="heading">{{isEditing?'编辑会员资料':'从认识彼此开始'}}</view>
+  <view class="muted" style="margin-top:16rpx;">{{isEditing?'选择你希望在社区展示的头像和昵称。':'用熟悉的微信头像和昵称，轻松加入青年公社。'}}</view>
 </view>
 <view class="card">
-  <view class="heading" style="font-size:34rpx;">创建会员档案</view>
-  <view class="field-title">你的昵称</view>
-  <input class="nickname-input" value="{{nickname}}" maxlength="32" placeholder="2–16个字符，可使用中文昵称" bindinput="onNickname"/>
-  <view class="muted" style="margin-top:16rpx;">目前只需要昵称，不收集手机号、真实姓名。</view>
-  <checkbox-group bindchange="onConsent" style="margin-top:32rpx;">
-    <label class="consent-line">
-      <checkbox value="agreed" checked="{{agreed}}" color="#202B3C"/>
-      <text>我已阅读并同意以下会员注册说明</text>
-    </label>
-  </checkbox-group>
-  <view class="policy">为创建会员档案，我们会保存你的微信账户标识、主动填写的昵称、注册确认记录，以及你后续主动参与的活动和成长记录。用于会员身份识别、活动管理及个人成长展示。可向青年公社运营方申请查阅、更正或删除个人资料。注册不会自动获得管理员权限，也不会自动产生积分或其他奖励。</view>
+ <view class="heading" style="font-size:34rpx;">{{isEditing?'我的头像与昵称':'创建会员档案'}}</view>
+ <view class="avatar-field">
+  <button class="avatar-button" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+   <image wx:if="{{avatarPreview}}" class="avatar" src="{{avatarPreview}}" mode="aspectFill"/>
+   <view wx:else class="avatar-placeholder">+</view>
+  </button>
+  <view class="muted" style="margin-top:12rpx;">点击选择微信头像，也可从相册选择（选填）</view>
+ </view>
+ <form bindsubmit="onSubmit">
+  <view class="field-title">会员昵称</view>
+  <input class="nickname-input" name="nickname" type="nickname" value="{{nickname}}" maxlength="32" placeholder="点击可选择微信昵称，也可自行输入" bindinput="onNickname" bindblur="onNickname"/>
+  <view class="muted" style="margin-top:16rpx;">头像、昵称均由你主动选择；不需要手机号或真实姓名。</view>
+  <block wx:if="{{!isEditing}}">
+   <checkbox-group bindchange="onConsent" style="margin-top:32rpx;">
+    <label class="consent-line"><checkbox value="agreed" checked="{{agreed}}" color="#202B3C"/><text>我已阅读并同意以下会员注册说明</text></label>
+   </checkbox-group>
+   <view class="policy">我们会保存用于识别会员的微信账户标识、你主动选择的昵称和头像（如选择，将上传至青年公社云存储）、注册确认记录，以及后续主动参与的社区活动与成长记录。用于会员身份识别、活动管理和会员资料展示。可向运营方申请查阅、更正或删除资料。头像为选填，不影响注册；不会自动获得管理员权限或积分。</view>
+  </block>
   <view wx:if="{{error}}" class="error">{{error}}</view>
-  <button type="primary" disabled="{{submitting}}" loading="{{submitting}}" bindtap="submit" style="margin-top:30rpx;">确认并加入青年公社</button>
+  <button type="primary" form-type="submit" disabled="{{submitting}}" loading="{{submitting}}" style="margin-top:30rpx;">{{isEditing?'保存会员资料':'确认并加入青年公社'}}</button>
+ </form>
 </view>
