@@ -3,8 +3,9 @@ const valid=s=>typeof s==='string'&&s.trim().length>0&&s.length<=120;
 exports.main=async(event={})=>{
  const openid=cloud.getWXContext().OPENID;if(!openid)throw Error('UNAUTHENTICATED');
  const a=await db.collection('members').where({_openid:openid}).limit(1).get();const actor=a.data[0];
- if(!actor||!['admin','superadmin'].includes(actor.role))throw Error('FORBIDDEN');
+ if(!actor)throw Error('MEMBER_NOT_FOUND');
  const isRoot=actor.role==='superadmin',action=event.action;
+ if(action!=='mine'&&!['admin','superadmin'].includes(actor.role))throw Error('FORBIDDEN');
  if(action==='list'){
   const status=['pending','verified','rejected','voided'].includes(event.status)?event.status:'pending';
   const q=await db.collection('champion_awards').where({status,...(isRoot?{}:{storeId:actor.storeId})}).orderBy('createdAt','desc').limit(30).get();
