@@ -1,5 +1,10 @@
-.field-title{font-size:30rpx;font-weight:600;margin-top:36rpx;margin-bottom:20rpx}
+.field-title{font-size:30rpx;font-weight:600;margin-top:32rpx;margin-bottom:20rpx}
 .nickname-input{padding:22rpx 18rpx;border:1rpx solid #dce2e9;border-radius:12rpx;font-size:30rpx}
+.avatar-field{text-align:center;margin-top:26rpx}
+.avatar-button{padding:0;margin:0 auto;width:150rpx;height:150rpx;border-radius:50%;border:2rpx solid #e6eaf0;overflow:hidden;background:#f4f6f9;display:flex;align-items:center;justify-content:center}
+.avatar-button::after{border:none}
+.avatar{width:150rpx;height:150rpx;border-radius:50%}
+.avatar-placeholder{font-size:65rpx;color:#8a94a5;line-height:150rpx}
 .consent-line{display:flex;align-items:center;font-size:27rpx;line-height:1.6}
 .policy{margin-top:18rpx;padding:22rpx;border-radius:12rpx;background:#f4f6f9;color:#647082;font-size:24rpx;line-height:1.8}
 .error{margin-top:16rpx;color:#c43939;font-size:26rpx}
