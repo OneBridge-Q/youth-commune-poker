@@ -1,31 +1,69 @@
 Page({
- data:{message:'活动与成长记录即将上线。',isAdmin:false,registered:false,nickname:'',memberNo:'',avatarSrc:'',champions:[]},
- async onShow(){
-  this.setData({avatarSrc:''});
-  const [member,admin,awards]=await Promise.allSettled([
-   wx.cloud.callFunction({name:'memberHome'}),
-   wx.cloud.callFunction({name:'adminProfile'}),
-   wx.cloud.callFunction({name:'championAdmin',data:{action:'mine'}})
-  ]);
-  const result=member.status==='fulfilled'?(member.value.result||{}):{};
-  const m=result.member||{};
-  this.setData({
-   registered:!!result.registered,nickname:m.nickname||'',memberNo:m.memberNo||'',
-   isAdmin:!!result.registered&&admin.status==='fulfilled'&&!!(admin.value.result&&admin.value.result.role),
-   champions:!!result.registered&&awards.status==='fulfilled'?(awards.value.result.records||[]):[]
-  });
-  if(result.registered&&m.avatarFileID){
-   try{
-    const f=await wx.cloud.getTempFileURL({fileList:[m.avatarFileID]});
-    const url=f.fileList&&f.fileList[0]&&f.fileList[0].tempFileURL;
-    if(url)this.setData({avatarSrc:url});
-   }catch(e){console.warn('[profile:avatar]',e);}
+  data: {
+    message: '活动与成长记录即将上线。',
+    isAdmin: false,
+    registered: false,
+    nickname: '',
+    memberNo: '',
+    avatarSrc: '',
+    champions: []
+  },
+  onShow: function () {
+    var page = this;
+    page.setData({ avatarSrc: '', isAdmin: false, champions: [] });
+    wx.cloud.callFunction({ name: 'memberHome' }).then(function (response) {
+      var result = response.result || {};
+      var member = result.member || {};
+      page.setData({
+        registered: !!result.registered,
+        nickname: member.nickname || '',
+        memberNo: member.memberNo || '',
+        avatarSrc: ''
+      });
+      if (result.registered && member.avatarFileID) {
+        wx.cloud.getTempFileURL({ fileList: [member.avatarFileID] }).then(function (fileResult) {
+          var file = fileResult.fileList && fileResult.fileList[0];
+          if (file && file.tempFileURL) {
+            page.setData({ avatarSrc: file.tempFileURL });
+          }
+        }).catch(function (error) {
+          console.warn('[profile:avatar]', error);
+        });
+      }
+    }).catch(function (error) {
+      console.error('[profile:memberHome]', error);
+    });
+    wx.cloud.callFunction({ name: 'adminProfile' }).then(function (response) {
+      page.setData({ isAdmin: !!(response.result && response.result.role) });
+    }).catch(function () {
+      page.setData({ isAdmin: false });
+    });
+    wx.cloud.callFunction({ name: 'championAdmin', data: { action: 'mine' } }).then(function (response) {
+      page.setData({ champions: (response.result && response.result.records) || [] });
+    }).catch(function (error) {
+      console.warn('[profile:champions]', error);
+      page.setData({ champions: [] });
+    });
+  },
+  openRegister: function () {
+    wx.navigateTo({ url: '/pages/register/index' });
+  },
+  editProfile: function () {
+    wx.navigateTo({ url: '/pages/register/index?mode=edit' });
+  },
+  openAdmin: function () {
+    wx.navigateTo({ url: '/pages/admin-highlights/index' });
+  },
+  openChampionAdmin: function () {
+    wx.navigateTo({ url: '/pages/admin-champions/index' });
+  },
+  openHighlights: function () {
+    wx.navigateTo({ url: '/pages/highlights/index' });
+  },
+  openChampion: function (event) {
+    wx.navigateTo({
+      url: '/pages/moment/index?type=champion&id=' +
+        encodeURIComponent(event.currentTarget.dataset.id)
+    });
   }
- },
- openRegister(){wx.navigateTo({url:'/pages/register/index'});},
- editProfile(){wx.navigateTo({url:'/pages/register/index?mode=edit'});},
- openAdmin(){wx.navigateTo({url:'/pages/admin-highlights/index'});},
- openChampionAdmin(){wx.navigateTo({url:'/pages/admin-champions/index'});},
- openHighlights(){wx.navigateTo({url:'/pages/highlights/index'});},
- openChampion(e){wx.navigateTo({url:'/pages/moment/index?type=champion&id='+encodeURIComponent(e.currentTarget.dataset.id)});}
 });
