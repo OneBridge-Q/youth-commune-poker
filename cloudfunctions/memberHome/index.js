@@ -1,0 +1,1 @@
+const cloud=require('wx-server-sdk');cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});const db=cloud.database();exports.main=async()=>{const openid=cloud.getWXContext().OPENID;if(!openid)throw Error('UNAUTHENTICATED');const q=await db.collection('members').where({_openid:openid}).limit(1).get();return {member:q.data[0]||{nickname:'新会员',skillPoints:0,rewardPoints:0,rank:'待评级'}}};};
