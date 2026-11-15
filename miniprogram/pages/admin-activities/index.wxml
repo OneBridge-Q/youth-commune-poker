@@ -1,0 +1,25 @@
+<view class="card"><view class="heading">发布一场青年公社活动</view><view class="muted">先创建草稿，确认信息后再发布。</view></view>
+<view class="card">
+ <view class="label">活动名称</view><input value="{{title}}" bindinput="onTitle" maxlength="60" placeholder="例如：硬件产品分享会"/>
+ <view class="label">活动分类</view>
+ <picker mode="selector" range="{{categories}}" value="{{categoryIndex}}" bindchange="onCategory"><view class="pick">{{categories[categoryIndex]}} ▼</view></picker>
+ <view class="label">日期与时间</view>
+ <view class="row"><picker mode="date" value="{{date}}" bindchange="onDate"><view class="pick">{{date}} ▼</view></picker><picker mode="time" value="{{time}}" bindchange="onTime"><view class="pick">{{time}} ▼</view></picker></view>
+ <view class="label">活动地点</view><input value="{{location}}" bindinput="onLocation" maxlength="120" placeholder="输入具体场地信息"/>
+ <view class="label">活动介绍</view><textarea value="{{description}}" bindinput="onDescription" maxlength="500" placeholder="活动内容、适合人群、注意事项"/>
+ <button type="primary" bindtap="create" loading="{{busy}}" disabled="{{busy}}" style="margin-top:25rpx;">创建活动草稿</button>
+</view>
+<view class="card"><view class="heading">活动管理</view><button size="mini" bindtap="load">刷新</button>
+ <view wx:if="{{loading}}" class="muted">加载中…</view><view wx:if="{{error}}" class="muted">{{error}}</view>
+ <view wx:for="{{activities}}" wx:key="id" class="item">
+  <view class="event-title">{{item.title}}</view>
+  <view class="muted">{{item.startDate}} {{item.startTime}} · {{item.category}}</view>
+  <view class="muted">状态：{{item.status==='draft'?'草稿':item.status==='published'?'已发布':'已取消'}}</view>
+  <view class="actions">
+   <button wx:if="{{item.status==='draft'}}" size="mini" type="primary" data-id="{{item.id}}" data-action="publish" bindtap="act">发布</button>
+   <button wx:if="{{item.status==='draft'||item.status==='published'}}" size="mini" data-id="{{item.id}}" data-action="cancel" bindtap="act">取消活动</button>
+   <button wx:if="{{item.status==='published'}}" size="mini" data-id="{{item.id}}" bindtap="viewSignups">报名名单</button>
+  </view>
+ </view>
+ <view wx:if="{{!activities.length&&!loading}}" class="muted">还没有活动，先创建第一场吧。</view>
+</view>
