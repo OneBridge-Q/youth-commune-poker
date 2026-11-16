@@ -1,16 +1,17 @@
 var club=require('../../utils/club-home');
 Page({
- data:{pillars:['全部','智力竞技','兴趣社交','青年共创'],selectedPillar:'全部',products:club.products,registered:false,nickname:'',skillPoints:0,rewardPoints:0,memberLoading:true,memberError:'',events:[],eventsLoading:true,eventsError:'',recaps:[],recapsLoading:true,recapsError:''},
+ data:{pillars:['全部','智力竞技','兴趣社交','青年共创'],selectedPillar:'全部',products:club.products,registered:false,nickname:'',memberLoading:true,memberError:'',events:[],eventsLoading:true,eventsError:'',recaps:[],recapsLoading:true,recapsError:''},
  onLoad:function(){wx.setNavigationBarTitle({title:'红圈 club'});},
  onShow:function(){this.loadHome();},
+ onHide:function(){this._loadSeq=(this._loadSeq||0)+1;},
  onUnload:function(){this._loadSeq=(this._loadSeq||0)+1;},
  loadHome:function(){
   var page=this,seq=(page._loadSeq||0)+1;page._loadSeq=seq;
   page.setData({memberLoading:true,memberError:'',eventsLoading:true,eventsError:'',recapsLoading:true,recapsError:''});
   wx.cloud.callFunction({name:'memberHome'}).then(function(r){
    if(seq!==page._loadSeq)return;var result=r.result||{},m=result.member||{};
-   page.setData({memberLoading:false,registered:!!result.registered,nickname:m.nickname||'',skillPoints:m.skillPoints||0,rewardPoints:m.rewardPoints||0});
-   if(result.registered)wx.cloud.callFunction({name:'memberIdentity'}).catch(function(){/* Existing login is not blocked by optional sync. */});
+   page.setData({memberLoading:false,registered:!!result.registered,nickname:m.nickname||'红圈会员'});
+   if(result.registered)wx.cloud.callFunction({name:'memberIdentity'}).catch(function(){/* Optional identity sync cannot block the home page. */});
   }).catch(function(){if(seq===page._loadSeq)page.setData({memberLoading:false,memberError:'会员资料暂未加载，活动仍可浏览。'});});
   wx.cloud.callFunction({name:'activityMember',data:{action:'list'}}).then(function(r){
    if(seq!==page._loadSeq)return;
@@ -28,8 +29,6 @@ Page({
  onCoverError:function(e){var i=Number(e.currentTarget.dataset.index);if(Number.isInteger(i)&&this.data.events[i]){var patch={};patch['events['+i+'].posterSrc']='';this.setData(patch);}},
  goActivities:function(){wx.navigateTo({url:'/pages/activities/index'});},
  goRegister:function(){wx.navigateTo({url:'/pages/register/index'});},
- goGrowth:function(){wx.navigateTo({url:'/pages/growth/index'});},
- goHighlights:function(){wx.navigateTo({url:'/pages/highlights/index'});},
  goMine:function(){wx.switchTab({url:'/pages/profile/index'});},
  onShareAppMessage:function(){return {title:'红圈 club｜智力竞技 · 兴趣社交 · 青年共创',path:'/pages/home/index'};}
 });

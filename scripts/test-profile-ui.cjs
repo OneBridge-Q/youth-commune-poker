@@ -1,0 +1,28 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const path=require('node:path'),root=path.resolve(__dirname,'..');
+function pageAt(name,replies){
+ let definition,queue=[],calls=[],nav=[];
+ const wx={cloud:{callFunction(o){calls.push(o);return replies(o);},getTempFileURL(){return Promise.reject(Error('avatar unavailable'));}},setNavigationBarTitle(){},navigateTo:o=>nav.push(o.url),switchTab:o=>nav.push(o.url),getStorageSync:()=>'',removeStorageSync(){}};
+ const context={wx,console,Page(x){definition=x;},require(){return {products:[],upcoming:x=>x,findProduct:()=>null};}};
+ vm.runInNewContext(fs.readFileSync(path.join(root,'miniprogram/pages',name,'index.js'),'utf8'),context);
+ definition.data=JSON.parse(JSON.stringify(definition.data));definition.setData=function(p){Object.assign(this.data,p);};
+ return{page:definition,calls,nav};
+}
+const tick=async()=>{for(let i=0;i<8;i++)await new Promise(r=>setImmediate(r));};
+let passed=0;async function test(n,f){await f();passed++;console.log('PASS '+n);}
+(async()=>{
+ await test('scores load into own personal card',async()=>{const x=pageAt('profile',o=>Promise.resolve({result:o.name==='memberHome'?{registered:true,member:{nickname:'苏提',skillPoints:120,rewardPoints:60}}:o.name==='adminProfile'?{role:'superadmin'}:o.name==='activityMember'?{applications:[]}:{records:[]}}));x.page.onShow();await tick();assert.equal(x.page.data.skillDisplay,'120');assert.equal(x.page.data.charmDisplay,'60');assert.equal(x.page.data.isAdmin,true);assert.equal(x.page.data.adminExpanded,false);});
+ await test('unregistered visitors do not fetch protected modules',async()=>{const x=pageAt('profile',()=>Promise.resolve({result:{registered:false,member:{}}}));x.page.onShow();await tick();assert.equal(x.calls.length,1);assert.equal(x.page.data.registered,false);});
+ await test('member errors do not masquerade as real zero scores',async()=>{const x=pageAt('profile',()=>Promise.reject(Error('offline')));x.page.onShow();await tick();assert(x.page.data.error);assert.equal(x.page.data.skillDisplay,'—');assert.equal(x.page.data.isAdmin,false);});
+ await test('avatar errors do not hide profile',async()=>{const x=pageAt('profile',o=>Promise.resolve({result:o.name==='memberHome'?{registered:true,member:{nickname:'苏提',avatarFileID:'cloud://x'}}:o.name==='adminProfile'?{role:'member'}:{records:[],applications:[]}}));x.page.onShow();await tick();assert.equal(x.page.data.nickname,'苏提');assert.equal(x.page.data.registered,true);assert.equal(x.page.data.isAdmin,false);});
+ await test('charisma card links to rules page',async()=>{const x=pageAt('profile',()=>Promise.resolve({result:{}}));x.page.openCharisma();assert.equal(x.nav[0],'/pages/charisma/index');});
+ await test('stale requests after tab leave cannot overwrite current identity',async()=>{let resolve;const x=pageAt('profile',()=>new Promise(r=>{resolve=r;}));x.page.onShow();x.page.onHide();resolve({result:{registered:true,member:{nickname:'stale'}}});await tick();assert.notEqual(x.page.data.nickname,'stale');});
+ await test('activity failure leaves profile usable and reports retry',async()=>{const x=pageAt('profile',o=>o.name==='activityMember'?Promise.reject(Error('offline')):Promise.resolve({result:o.name==='memberHome'?{registered:true,member:{nickname:'苏提'}}:{records:[]}}));x.page.onShow();await tick();assert.equal(x.page.data.registered,true);assert(x.page.data.activitiesError);});
+ await test('ranking rejects older global service',async()=>{const x=pageAt('ranking',()=>Promise.resolve({result:{rows:[{nickname:'stranger',score:99}],me:{}}}));x.page.onShow();await tick();assert(x.page.data.error.includes('重新部署'));assert.equal(x.page.data.rows.length,0);});
+ await test('ranking accepts only friends scope',async()=>{const x=pageAt('ranking',()=>Promise.resolve({result:{scope:'confirmed_friends',rows:[{nickname:'好友',score:9,rank:1,key:'x'}],friendCount:1}}));x.page.onShow();await tick();assert.equal(x.page.data.rows.length,1);assert.equal(x.page.data.me,undefined);});
+ await test('home order: banner, welcome, activities; no score duplication',async()=>{const s=fs.readFileSync(path.join(root,'miniprogram/pages/home/index.wxml'),'utf8');assert(s.indexOf('class="hero"')<s.indexOf('class="welcome-card"'));assert(s.indexOf('class="welcome-card"')<s.indexOf('FIND YOUR CIRCLE'));assert(!/skillPoints|rewardPoints|value-rule/.test(s));assert.equal((s.match(/欢迎回来/g)||[]).length,1);});
+ await test('personal card contains both values and preserves admin links',async()=>{const s=fs.readFileSync(path.join(root,'miniprogram/pages/profile/index.wxml'),'utf8');assert(s.indexOf('我的战力值')<s.indexOf('shortcut-grid'));assert(s.indexOf('我的魅力值')<s.indexOf('shortcut-grid'));for(const n of ['openRecapAdmin','openActivityAdmin','openAdmin','openChampionAdmin'])assert(s.includes(n));assert(!s.includes('value-rule'));});
+ await test('ranking WXML has no own standing',async()=>{const s=fs.readFileSync(path.join(root,'miniprogram/pages/ranking/index.wxml'),'utf8');assert(!/me\.score|me\.rank|my-standing|isMe/.test(s));assert(s.includes('好友'));});
+ console.log('TOTAL '+passed+' UI/structure tests passed; simulated Page only, not WeChat compiler.');
+})().catch(e=>{console.error(e);process.exitCode=1;});

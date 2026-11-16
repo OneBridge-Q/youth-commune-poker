@@ -1,18 +1,21 @@
 'use strict';
 const policy = require('./policy');
 const { findMember, APP_ID } = require('./memberLookup');
+const { loadFriendIds } = require('./friends');
 const LIMIT = 100;
 function createService(cloud, now) {
   const db = cloud.database(), cmd = db.command, agg = cmd.aggregate;
   const clock = now || Date.now;
-  function battlePipeline() {
+  function battlePipeline(ids) {
     return db.collection('members').aggregate()
+      .match({ _id: cmd.in(ids) })
       .match(policy.visibleFilter(cmd))
       .match({ skillPoints: cmd.gt(0) })
       .project({ _id: 1, nickname: 1, score: '$skillPoints' });
   }
-  function charismaPipeline(period) {
+  function charismaPipeline(period, ids) {
     return db.collection('charisma_ledger').aggregate()
+      .match({ memberId: cmd.in(ids) })
       .match(policy.ledgerFilter(cmd, period))
       .group({ _id: '$memberId', score: agg.sum('$rankingDelta') })
       .match({ score: cmd.gt(0) })
@@ -32,11 +35,17 @@ function createService(cloud, now) {
     if (!member) throw new Error('REGISTER_REQUIRED');
     if (member.status && member.status !== 'active') throw new Error('MEMBER_DISABLED');
     const serverNow = clock(), period = policy.quarterAt(serverNow);
-    const pipeline = () => board === 'battle' ? battlePipeline() : charismaPipeline(period);
-    let top, mine;
+    const ids = await loadFriendIds(db, member._id);
+    const result = {
+      board, scope: 'confirmed_friends', period: board === 'charisma' ? period : null,
+      updatedAt: new Date(serverNow).toISOString(), limit: LIMIT, friendCount: ids.length,
+      rows: [], scoringBasis: board === 'battle' ? 'lifetime-skill-points' : 'quarter-community-earnings'
+    };
+    if (!ids.length) return result;
+    let top;
     try {
-      top = await pipeline().sort({ score: -1, _id: 1 }).limit(LIMIT).end();
-      mine = await pipeline().match({ _id: member._id }).limit(1).end();
+      top = await (board === 'battle' ? battlePipeline(ids) : charismaPipeline(period, ids))
+        .sort({ score: -1, _id: 1 }).limit(LIMIT).end();
     } catch (error) {
       const text = String(error.errMsg || error.message || '');
       if (board === 'charisma' && /collection.*(not exist|not found)|table not exist/i.test(text)) {
@@ -44,20 +53,11 @@ function createService(cloud, now) {
       }
       throw error;
     }
-    const own = mine.list && mine.list[0];
-    const score = own ? policy.positive(own.score) : 0;
-    let myRank = null;
-    if (score > 0) {
-      const ahead = await pipeline().match({ score: cmd.gt(score) }).count('total').end();
-      myRank = ((ahead.list && ahead.list[0] && ahead.list[0].total) || 0) + 1;
-    }
-    // Read-only. Never reset members.skillPoints / rewardPoints, create ledger rows,
-    // infer quarterly earnings from redemption balances, or accept client dates.
-    return { board, period: board === 'charisma' ? period : null,
-      updatedAt: new Date(serverNow).toISOString(), limit: LIMIT,
-      rows: policy.publicRows(top.list || [], member._id),
-      me: { score, rank: myRank, eligible: policy.isEligible(member) },
-      scoringBasis: board === 'battle' ? 'lifetime-skill-points' : 'quarter-community-earnings' };
+    result.rows = policy.publicRows(top.list || [], member._id).map(function(row) {
+      return { key: row.key, rank: row.rank, score: row.score, nickname: row.nickname };
+    });
+    // No self placement, global fallback, balance writes or client-selected scope.
+    return result;
   };
 }
 module.exports = { createService };
