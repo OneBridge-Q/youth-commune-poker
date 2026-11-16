@@ -1,0 +1,1 @@
+.tabs{display:flex;margin:24rpx;gap:16rpx}.tabs button{flex:1;font-size:28rpx;border-radius:30rpx}.tabs .active{background:#202b3c;color:#fff}.attended{color:#34755b;font-size:25rpx;margin-top:18rpx}.test{color:#a16d2a;font-size:24rpx;margin-top:12rpx}

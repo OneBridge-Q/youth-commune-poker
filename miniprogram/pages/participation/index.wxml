@@ -1,0 +1,9 @@
+<view class="card"><view class="heading">我的活动记录</view><view class="muted">报名与到场分别记录，测试签到不会计入正式成长。</view></view>
+<view class="tabs"><button class="{{tab==='attended'?'active':''}}" data-tab="attended" bindtap="choose">已参加</button><button class="{{tab==='applied'?'active':''}}" data-tab="applied" bindtap="choose">已报名 · 待签到</button></view>
+<view wx:if="{{loading}}" class="card">加载中…</view>
+<view wx:elif="{{error}}" class="card">{{error}}<button bindtap="load">重试</button></view>
+<block wx:else>
+ <view wx:for="{{visible}}" wx:key="activityId" class="card" data-id="{{item.activityId}}" bindtap="open"><view class="heading" style="font-size:32rpx;">{{item.title}}</view><view class="muted">{{item.startDate}} {{item.startTime}} · {{item.location}}</view><view wx:if="{{item.checkedInAt}}" class="attended">已确认到场 · {{item.checkedInAt}}</view><view wx:else class="muted">尚未签到</view><view wx:if="{{item.isTest}}" class="test">测试记录 · 不计入正式成长</view></view>
+ <view wx:if="{{!visible.length}}" class="card muted">{{tab==='attended'?'还没有确认到场的记录。':'暂无待签到的报名记录。'}}</view>
+ <button wx:if="{{hasMore}}" bindtap="more">加载更多</button>
+</block>
