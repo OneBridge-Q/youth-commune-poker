@@ -10,7 +10,8 @@
     "pages/register/index",
     "pages/activities/index",
     "pages/activity-detail/index",
-    "pages/admin-activities/index"
+    "pages/admin-activities/index",
+    "pages/growth/index"
   ],
   "window": {
     "navigationBarTitleText": "青年公社 Poker Club",
