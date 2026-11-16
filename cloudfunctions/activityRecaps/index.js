@@ -44,8 +44,8 @@ function scope(actor,item){if(actor.role!=='superadmin'&&actor.storeId!==item.st
 exports.main=async function(event){
  event=event||{};
  if(event.action==='list'){
-  const rows=await db.collection('activities').where({status:'published','recap.status':'published','recap.isTest':false}).orderBy('startDate','desc').limit(20).get();
-  const list=rows.data.filter(function(x){return past(x)&&x.isTest!==true&&x.recap&&x.recap.completedConfirmed===true&&x.recap.consentConfirmed===true;}).slice(0,8);
+  const rows=await db.collection('activities').where({status:'published'}).limit(100).get();
+  const list=rows.data.filter(function(x){return past(x)&&x.isTest!==true&&x.recap&&x.recap.status==='published'&&x.recap.isTest===false&&x.recap.completedConfirmed===true&&x.recap.consentConfirmed===true;}).sort(function(a,b){return String(b.startDate).localeCompare(String(a.startDate));}).slice(0,8);
   let ids=[];list.forEach(function(x){ids=ids.concat(Array.isArray(x.recap.photoFileIDs)?x.recap.photoFileIDs.slice(0,3):[]);});
   const urls=await photoUrls(ids);
   return {recaps:list.map(function(x){
@@ -56,7 +56,8 @@ exports.main=async function(event){
  }
  const actor=await admin();
  if(event.action==='manage'){
-  const rows=await db.collection('activities').where(actor.role==='superadmin'?{}:{storeId:actor.storeId}).orderBy('startDate','desc').limit(100).get();
+  const rows=await db.collection('activities').where(actor.role==='superadmin'?{}:{storeId:actor.storeId}).limit(100).get();
+  rows.data.sort(function(a,b){return String(b.startDate).localeCompare(String(a.startDate));});
   return {uploadDir:'activity-recaps/'+token(actor._id)+'/',activities:rows.data.map(function(x){
    const r=x.recap||{};
    return {id:x._id,title:x.title,startDate:x.startDate,status:x.status,canPublish:x.status==='published'&&past(x),revision:r.revision||0,recapStatus:r.status||'none',recapTitle:r.title||'',recapBody:r.body||'',isTest:r.isTest===true};
