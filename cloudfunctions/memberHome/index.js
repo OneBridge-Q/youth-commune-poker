@@ -12,7 +12,14 @@ exports.main = async () => {
   // 没有会员档案时只返回占位资料，不自动注册或写入数据库。
   return {
     registered: Boolean(member),
-    member: member || {
+    member: member ? {
+      nickname: member.nickname || '会员',
+      avatarFileID: member.avatarFileID || '',
+      memberNo: member.memberNo || '',
+      skillPoints: member.skillPoints || 0,
+      rewardPoints: member.rewardPoints || 0,
+      rank: member.rank || '待评级'
+    } : {
       nickname: '新会员',
       skillPoints: 0,
       rewardPoints: 0,
