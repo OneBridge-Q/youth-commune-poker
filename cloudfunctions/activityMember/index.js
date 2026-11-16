@@ -2,7 +2,7 @@ const cloud=require('wx-server-sdk');
 const crypto=require('crypto');
 cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});const db=cloud.database();
 const valid=s=>typeof s==='string'&&s.length>0&&s.length<=128;
-const view=x=>({id:x._id,title:x.title,category:x.category,description:x.description||'',location:x.location,startDate:x.startDate,startTime:x.startTime,status:x.status});
+const view=x=>({id:x._id,title:x.title,category:x.category,description:x.description||'',location:x.location,startDate:x.startDate,startTime:x.startTime,posterFileID:x.posterFileID||'',status:x.status});
 async function me(){const openid=cloud.getWXContext().OPENID;if(!openid)throw Error('UNAUTHENTICATED');const q=await db.collection('members').where({_openid:openid}).limit(1).get();if(!q.data.length)throw Error('REGISTER_REQUIRED');return q.data[0];}
 async function eventById(id){if(!valid(id))throw Error('INVALID_ID');const q=await db.collection('activities').doc(id).get().catch(()=>null);if(!q||!q.data||q.data.status!=='published')throw Error('ACTIVITY_NOT_AVAILABLE');return q.data;}
 function signupId(activityId,memberId){return 'as_'+crypto.createHash('sha256').update(activityId+':'+memberId).digest('hex').slice(0,36);}
