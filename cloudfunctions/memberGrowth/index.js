@@ -20,7 +20,9 @@ exports.main=async function(){
   db.collection('champion_awards').where({memberId:id,status:'verified'}).limit(50).get(),
   db.collection('hand_records').where({memberId:id,status:'verified'}).limit(100).get()
  ]);
- const applied=parts[0].data,champions=parts[1].data,hands=parts[2].data;
+ const applied=parts[0].data,
+  champions=parts[1].data.filter(function(x){return x.isTest!==true;}),
+  hands=parts[2].data.filter(function(x){return x.isTest!==true;});
  const events=[];
  const joined=day(member.joinedAt||member.createdAt);
  if(joined)events.push({kind:'joined',date:joined,title:'加入青年公社',detail:'成长旅程从这里开始'});
@@ -37,10 +39,10 @@ exports.main=async function(){
  return {
   registered:true,
   profile:{nickname:member.nickname||'会员',avatarFileID:member.avatarFileID||'',joinedAt:joined,
-   intro:member.intro||'',interests:Array.isArray(member.interests)?member.interests:[]},
+   intro:member.intro||'',interests:Array.isArray(member.interests)?member.interests:[],joinedAtKnown:!!joined},
   summary:{registeredActivities:applied.length,verifiedHonors:champions.length+hands.length,
    checkedInActivities:0,checkinImplemented:false},
   timeline:events.slice(0,100),
-  partial:{registrations:applied.length===100,champions:champions.length===50,hands:hands.length===100}
+  partial:{registrations:parts[0].data.length===100,champions:parts[1].data.length===50,hands:parts[2].data.length===100}
  };
 };
