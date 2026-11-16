@@ -5,7 +5,7 @@ const db=cloud.database();
 function parseDate(v){
  if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(v))throw Error('INVALID_JOIN_DATE');
  const d=new Date(v+'T12:00:00+08:00');
- if(Number.isNaN(d.getTime())||d.toISOString().slice(0,10)!==new Date(v+'T12:00:00+08:00').toISOString().slice(0,10)||d.getTime()>Date.now())throw Error('INVALID_JOIN_DATE');
+ if(Number.isNaN(d.getTime())||new Date(d.getTime()+8*3600000).toISOString().slice(0,10)!==v||d.getTime()>Date.now())throw Error('INVALID_JOIN_DATE');
  return d;
 }
 exports.main=async function(event){
