@@ -1,0 +1,29 @@
+<view class="card">
+ <view class="muted">YOUTH COMMUNE · 我的成长履历</view>
+ <view wx:if="{{profile}}" class="member-head">
+  <image wx:if="{{avatarSrc}}" class="member-avatar" src="{{avatarSrc}}" mode="aspectFill"/>
+  <view class="member-info"><view class="heading">{{profile.nickname}}</view>
+   <view class="muted">加入青年公社：{{profile.joinedAt||'记录中'}}</view>
+  </view>
+ </view>
+ <view class="muted" style="margin-top:18rpx;">每一次参与，都是成长的足迹。</view>
+</view>
+<view wx:if="{{loading}}" class="card">正在加载你的成长履历…</view>
+<view wx:if="{{error}}" class="card">{{error}}</view>
+<block wx:if="{{summary}}">
+ <view class="card"><view class="heading" style="font-size:34rpx;">成长概览</view>
+  <view class="summary-grid">
+   <view class="metric"><view class="metric-number">{{summary.registeredActivities}}</view><view class="muted">当前报名</view></view>
+   <view class="metric"><view class="metric-number">{{summary.verifiedHonors}}</view><view class="muted">已认证荣誉</view></view>
+  </view>
+  <view class="muted" style="margin-top:14rpx;">到场签到功能尚未上线，报名不等于参加。</view>
+ </view>
+ <view class="card"><view class="heading" style="font-size:34rpx;">我的成长时间线</view>
+  <view wx:for="{{timeline}}" wx:key="index" class="timeline-item">
+   <view class="timeline-date">{{item.date||'日期待确认'}}</view>
+   <view class="timeline-title">{{item.title}}</view>
+   <view class="muted">{{item.detail}}</view>
+  </view>
+  <view wx:if="{{!timeline.length}}" class="muted" style="margin-top:18rpx;">加入一次活动，开始记录你的成长故事。</view>
+ </view>
+</block>
