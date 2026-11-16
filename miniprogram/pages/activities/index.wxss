@@ -1,1 +1,9 @@
 .filter{white-space:nowrap}.filter-inner{display:flex;padding:4rpx 24rpx 12rpx;gap:16rpx}.filter-chip{flex-shrink:0;border:1rpx solid #d6dce4;border-radius:28rpx;padding:12rpx 22rpx;font-size:26rpx;color:#586578;background:#fff}.filter-chip.selected{background:#202b3c;color:#fff;border-color:#202b3c}.activity-card{margin-top:14rpx}.activity-title{font-size:35rpx;font-weight:650;margin:22rpx 0}.category{font-size:24rpx;color:#a88750}.activity-more{margin-top:24rpx;font-size:27rpx;color:#536985;text-align:right}.error{color:#c33;font-size:27rpx}
+
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:16rpx;margin:0 24rpx 24rpx}
+.product-card{background:#fff;border-radius:18rpx;padding:12rpx;overflow:hidden}
+.product-poster{display:block;width:100%;height:290rpx;border-radius:12rpx}
+.product-placeholder{display:flex;align-items:center;justify-content:center;text-align:center;height:290rpx;padding:20rpx;box-sizing:border-box;border-radius:12rpx;background:#203048;color:#e5c58c;font-size:30rpx;font-weight:600}
+.product-name{font-size:27rpx;font-weight:650;margin:14rpx 0 6rpx}
+.product-card .muted{font-size:22rpx}
+.event-cover{display:block;width:100%;height:310rpx;border-radius:12rpx}
