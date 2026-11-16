@@ -1,1 +1,3 @@
 .info{margin-top:20rpx;color:#536074;font-size:29rpx}.section-title{font-weight:700;font-size:32rpx;margin-bottom:22rpx}.desc{font-size:29rpx;line-height:1.8;white-space:pre-wrap;color:#414d5d}.success{font-size:30rpx;color:#28705d;text-align:center;margin:12rpx 0 24rpx}
+
+.detail-poster{display:block;width:100%;border-radius:14rpx;margin-bottom:26rpx}
