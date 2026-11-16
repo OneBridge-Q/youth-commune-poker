@@ -1,5 +1,6 @@
+var catalog=require('../../utils/activity-products.js');
 Page({
- data:{activities:[],loading:false,error:'',categories:['全部','社交交流','知识分享','户外运动','创业共创','其他'],selected:'全部'},
+ data:{activities:[],loading:false,error:'',categories:['全部','社交交流','知识分享','户外运动','创业共创','其他'],selected:'全部',products:catalog.products,posterErrors:{}},
  onShow:function(){this.load();},
  chooseCategory:function(e){this.setData({selected:e.currentTarget.dataset.value});this.filter();},
  filter:function(){
@@ -9,8 +10,9 @@ Page({
  load:function(){
   var page=this;page.setData({loading:true,error:''});
   wx.cloud.callFunction({name:'activityMember',data:{action:'list'}}).then(function(res){
-   page.setData({activities:(res.result&&res.result.activities)||[],loading:false});page.filter();
+   page.setData({activities:((res.result&&res.result.activities)||[]).map(catalog.decorate),loading:false});page.filter();
   }).catch(function(e){console.error('[activities:list]',e);page.setData({loading:false,error:'活动加载失败，请检查云函数和数据库集合'});});
  },
+ onPosterError:function(e){var errors=this.data.posterErrors||{};errors[e.currentTarget.dataset.key]=true;this.setData({posterErrors:errors});},
  open:function(e){wx.navigateTo({url:'/pages/activity-detail/index?id='+encodeURIComponent(e.currentTarget.dataset.id)});}
 });
