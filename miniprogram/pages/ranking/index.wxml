@@ -1,15 +1,15 @@
-<view class="ranking-head"><view class="eyebrow">RED CIRCLE / FRIENDS</view><view class="board-title">和好友，一起进阶</view><view class="board-subtitle">只展示小程序内双方确认的好友，不展示全体会员。</view></view>
+<view class="ranking-head"><view class="eyebrow">RED CIRCLE / STORE RANKINGS</view><view class="board-title">本店天梯榜</view><view class="board-subtitle">按会员所属门店排名，不混入其他分店的成绩。</view></view>
 <view class="board-tabs"><button class="board-tab {{board==='battle'?'active':''}}" data-board="battle" bindtap="chooseBoard">战力值榜</button><button class="board-tab {{board==='charisma'?'active':''}}" data-board="charisma" bindtap="chooseBoard">魅力值榜</button></view>
 <view class="period-strip">
- <block wx:if="{{board==='battle'}}"><text class="period-title">好友累计战力</text><text class="period-note">长期保留 · 不按季度清零</text></block>
- <block wx:else><view class="period-title">{{period?period.label:'好友魅力值季度榜'}}</view><view class="period-note">{{period?period.startDate+' — '+period.endDate:'按北京时间自然季度统计'}} · 季度重新计分</view></block>
+ <block wx:if="{{board==='battle'}}"><text class="period-title">本店累计战力</text><text class="period-note">长期保留 · 不按季度清零</text></block>
+ <block wx:else><view class="period-title">{{period?period.label:'本店魅力值季度榜'}}</view><view class="period-note">{{period?period.startDate+' — '+period.endDate:'按北京时间自然季度统计'}} · 季度重新计分</view></block>
 </view>
-<view wx:if="{{loading}}" class="state-panel">正在加载好友排名…</view>
+<view wx:if="{{loading}}" class="state-panel">正在加载本店排名…</view>
 <view wx:elif="{{error}}" class="state-panel"><view class="error-text">{{error}}</view><button wx:if="{{needsRegister}}" class="state-button" bindtap="register">加入红圈</button><button wx:else class="state-button" bindtap="load">重新加载</button></view>
 <block wx:else>
- <view class="list-card"><view class="list-heading"><text class="position">排名</text><text class="name-column">好友</text><text>{{board==='battle'?'战力值':'本季魅力值'}}</text></view>
+ <view class="list-card"><view class="list-heading"><text class="position">排名</text><text class="name-column">本店会员</text><text>{{board==='battle'?'战力值':'本季魅力值'}}</text></view>
   <view wx:for="{{rows}}" wx:key="key" class="rank-row"><text class="position {{item.rank<=3?'leading':''}}">{{item.rank}}</text><view class="name-column">{{item.nickname}}</view><text class="value">{{item.score}}</text></view>
-  <view wx:if="{{!rows.length}}" class="empty-message"><view class="empty-ring"></view><view class="empty-title">{{!friendCount?'还没有已确认的好友':'好友暂未上榜'}}</view><view>{{!friendCount?'建立好友关系后，这里才会显示排名。':board==='battle'?'好友还没有可展示的有效战力成绩。':'好友本季度还没有已入账的有效魅力值。'}}</view></view>
+  <view wx:if="{{!rows.length}}" class="empty-message"><view class="empty-ring"></view><view class="empty-title">本店暂未有会员上榜</view><view>{{board==='battle'?'本店还没有可展示的有效战力成绩。':'本店本季度还没有已入账的有效魅力值。'}}</view></view>
  </view>
- <view class="board-footnote">只展示好友前100名，同分并列。个人战力值与魅力值请在「我的」查看。{{board==='charisma'?'换季与兑换不清空可兑换余额，也不以余额排序。':''}}</view>
+ <view class="board-footnote">本店会员均可参与，包含本人；仅展示有效正分且允许展示的会员，最多100名，同分并列。个人数值请在「我的」查看。{{board==='charisma'?'季度只重新统计榜单，不清空可兑换余额；兑换不扣季度榜分。':''}}</view>
 </block>
