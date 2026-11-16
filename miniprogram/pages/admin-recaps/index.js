@@ -15,12 +15,52 @@ Page({
  onChecks:function(e){var v=e.detail.value||[];this.setData({completed:v.indexOf('completed')>=0,consent:v.indexOf('consent')>=0});},
  onTest:function(e){this.setData({isTest:!!e.detail.value});},
  choosePhotos:function(){
-  var page=this;if(page.data.busy)return;
-  wx.chooseMedia({count:3,mediaType:['image'],sourceType:['album'],sizeType:['compressed'],success:function(r){
-   var files=r.tempFiles||[];if(!files.length)return;
-   if(files.some(function(x){return !x.tempFilePath||x.size>5*1024*1024;})){page.setData({error:'请选择每张不超过5MB的图片。'});return;}
-   Promise.all(files.map(function(f){return new Promise(function(resolve,reject){wx.getImageInfo({src:f.tempFilePath,success:function(info){var ext=String(info.type||'').toLowerCase();if(ext==='jpeg')ext='jpg';if(['jpg','png','webp'].indexOf(ext)<0){reject(Error('UNSUPPORTED_IMAGE'));return;}resolve({path:f.tempFilePath,ext:ext});},fail:reject});})).then(function(p){page.setData({photos:p,error:''});}).catch(function(){page.setData({error:'请使用 JPG、PNG 或 WebP 图片。'});});
-  },fail:function(e){if(String(e.errMsg||'').indexOf('cancel')<0)page.setData({error:'无法选择照片，请检查相册权限。'});}});
+  var page=this;
+  if(page.data.busy)return;
+  wx.chooseMedia({
+   count:3,
+   mediaType:['image'],
+   sourceType:['album'],
+   sizeType:['compressed'],
+   success:function(r){
+    var files=r.tempFiles||[];
+    if(!files.length)return;
+    if(files.some(function(file){
+     return !file.tempFilePath||file.size>5*1024*1024;
+    })){
+     page.setData({error:'请选择每张不超过5MB的图片。'});
+     return;
+    }
+    // Keep the map callback and Promise executor separate to avoid mismatched closures.
+    var imageChecks=files.map(function(file){
+     return new Promise(function(resolve,reject){
+      wx.getImageInfo({
+       src:file.tempFilePath,
+       success:function(info){
+        var ext=String(info.type||'').toLowerCase();
+        if(ext==='jpeg')ext='jpg';
+        if(['jpg','png','webp'].indexOf(ext)<0){
+         reject(Error('UNSUPPORTED_IMAGE'));
+         return;
+        }
+        resolve({path:file.tempFilePath,ext:ext});
+       },
+       fail:reject
+      });
+     });
+    });
+    Promise.all(imageChecks).then(function(photos){
+     page.setData({photos:photos,error:''});
+    }).catch(function(){
+     page.setData({error:'请使用 JPG、PNG 或 WebP 图片。'});
+    });
+   },
+   fail:function(e){
+    if(String(e.errMsg||'').indexOf('cancel')<0){
+     page.setData({error:'无法选择照片，请检查相册权限。'});
+    }
+   }
+  });
  },
  save:function(){
   var page=this,a=page.data.selected;if(page.data.busy)return;
