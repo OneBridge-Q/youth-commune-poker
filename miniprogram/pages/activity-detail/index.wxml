@@ -2,6 +2,7 @@
 <view wx:if="{{error}}" class="card"><view class="muted">{{error}}</view></view>
 <block wx:if="{{activity}}">
  <view class="card">
+  <image wx:if="{{activity.posterSrc&&!posterError}}" src="{{activity.posterSrc}}" mode="widthFix" class="detail-poster" binderror="onPosterError"/>
   <view class="muted">{{activity.category}} · 青年公社</view>
   <view class="heading" style="margin-top:18rpx;">{{activity.title}}</view>
   <view class="info">🗓 {{activity.startDate}} {{activity.startTime}}</view>
