@@ -1,10 +1,10 @@
+const {findMember}=require('./memberLookup');
 const cloud=require('wx-server-sdk');cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});const db=cloud.database();
 const TYPES=new Set(['straight_flush','four_of_a_kind','full_house','flush','straight','three_of_a_kind','two_pair','one_pair','high_card']);
 const safe=s=>typeof s==='string'&&s.length>0&&s.length<=100;
 exports.main=async(event={})=>{
  const openid=cloud.getWXContext().OPENID;if(!openid)throw Error('UNAUTHENTICATED');
- const q=await db.collection('members').where({_openid:openid}).limit(1).get();
- const actor=q.data[0];if(!actor||!['admin','superadmin'].includes(actor.role))throw Error('FORBIDDEN');
+ const actor=await findMember(db,openid);if(!actor||!['admin','superadmin'].includes(actor.role))throw Error('FORBIDDEN');
  const privileged=actor.role==='superadmin';const action=event.action;
  if(action==='members'){
   const keyword=String(event.keyword||'').trim();if(keyword.length<2||keyword.length>30)throw Error('INVALID_SEARCH');
