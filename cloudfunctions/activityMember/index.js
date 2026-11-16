@@ -1,3 +1,4 @@
+const {findMember}=require('./memberLookup');
 const cloud=require('wx-server-sdk');
 const crypto=require('crypto');
 cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});const db=cloud.database();
@@ -16,7 +17,7 @@ async function attachPosters(activities){
  }catch(err){console.error('[activityMember:posterLinks]',err);}
  return rows;
 }
-async function me(){const openid=cloud.getWXContext().OPENID;if(!openid)throw Error('UNAUTHENTICATED');const q=await db.collection('members').where({_openid:openid}).limit(1).get();if(!q.data.length)throw Error('REGISTER_REQUIRED');return q.data[0];}
+async function me(){const openid=cloud.getWXContext().OPENID;if(!openid)throw Error('UNAUTHENTICATED');const member=await findMember(db,openid);if(!member)throw Error('REGISTER_REQUIRED');return member;}
 async function eventById(id){if(!valid(id))throw Error('INVALID_ID');const q=await db.collection('activities').doc(id).get().catch(()=>null);if(!q||!q.data||q.data.status!=='published')throw Error('ACTIVITY_NOT_AVAILABLE');return q.data;}
 function signupId(activityId,memberId){return 'as_'+crypto.createHash('sha256').update(activityId+':'+memberId).digest('hex').slice(0,36);}
 exports.main=async(event={})=>{
@@ -32,9 +33,9 @@ exports.main=async(event={})=>{
   const output={activity:decorated[0],myStatus:'not_registered'};
   const openid=cloud.getWXContext().OPENID;
   if(openid){
-   const q=await db.collection('members').where({_openid:openid}).limit(1).get();
-   if(q.data.length){
-    const row=await db.collection('activity_signups').doc(signupId(a._id,q.data[0]._id)).get().catch(()=>null);
+   const member=await findMember(db,openid);
+   if(member){
+    const row=await db.collection('activity_signups').doc(signupId(a._id,member._id)).get().catch(()=>null);
     output.myStatus=row&&row.data&&row.data.status==='applied'?'applied':'none';
    }
   }
