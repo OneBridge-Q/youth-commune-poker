@@ -7,12 +7,7 @@ Page({
   wx.cloud.callFunction({name:'activityMember',data:{action:'detail',id:page.data.id}}).then(function(res){
    var r=res.result||{},activity=r.activity||null;
    page.setData({activity:activity,myStatus:r.myStatus||'none',loading:false});
-   if(activity&&activity.posterFileID){
-    wx.cloud.getTempFileURL({fileList:[activity.posterFileID]}).then(function(f){
-     var file=f.fileList&&f.fileList[0];
-     if(file&&file.tempFileURL)page.setData({'activity.posterSrc':file.tempFileURL});
-    }).catch(function(err){console.warn('[activity:poster]',err);});
-   }
+
   }).catch(function(e){console.error('[activity:detail]',e);page.setData({loading:false,error:'活动已下架或暂时无法加载'});});
  },
  apply:function(){
