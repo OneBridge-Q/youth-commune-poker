@@ -25,8 +25,9 @@
  <view class="muted">活动足迹 · 已认证荣誉 · 成长时间线</view>
 </view>
 <view wx:if="{{registered}}" class="card">
- <view class="row"><text>技术分</text><text>{{skillPoints}}</text></view>
- <view class="row"><text>兑换分</text><text>{{rewardPoints}}</text></view>
+ <view class="row"><text>战力值</text><text>{{skillPoints}}</text></view>
+ <view class="row"><text>魅力值</text><text>{{rewardPoints}}</text></view>
+ <view class="muted" style="margin-top:20rpx;">战力值：竞技能力评价 · 魅力值：社区贡献与合规权益兑换</view>
 </view>
 <view wx:if="{{registered}}" class="card" bindtap="goHighlights">
  <view class="heading">荣耀时刻 ›</view>
