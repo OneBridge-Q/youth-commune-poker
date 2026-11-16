@@ -1,8 +1,9 @@
+const {findMember}=require('./memberLookup');
 const cloud=require('wx-server-sdk');cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});const db=cloud.database();
 const valid=s=>typeof s==='string'&&s.trim().length>0&&s.length<=120;
 exports.main=async(event={})=>{
  const openid=cloud.getWXContext().OPENID;if(!openid)throw Error('UNAUTHENTICATED');
- const a=await db.collection('members').where({_openid:openid}).limit(1).get();const actor=a.data[0];
+ const actor=await findMember(db,openid);
  if(!actor)throw Error('MEMBER_NOT_FOUND');
  const isRoot=actor.role==='superadmin',action=event.action;
  if(action!=='mine'&&!['admin','superadmin'].includes(actor.role))throw Error('FORBIDDEN');
