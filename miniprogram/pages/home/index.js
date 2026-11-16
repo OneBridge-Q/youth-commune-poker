@@ -17,6 +17,7 @@ Page({
   }).catch(function(e){console.error('[home:member]',e);page.setData({error:'连接失败，请检查云环境及云函数'});}).then(function(){page.setData({loading:false});});
  },
  goRegister:function(){wx.navigateTo({url:'/pages/register/index'});},
+ goGrowth:function(){wx.navigateTo({url:'/pages/growth/index'});},
  goHighlights:function(){wx.navigateTo({url:'/pages/highlights/index'});},
  goActivities:function(){wx.navigateTo({url:'/pages/activities/index'});}
 });
