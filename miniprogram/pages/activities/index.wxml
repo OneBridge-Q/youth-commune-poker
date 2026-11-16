@@ -1,19 +1,9 @@
 <view class="card"><view class="muted">YOUTH COMMUNE · 青年公社</view><view class="heading">一起参与，一起成长</view><view class="muted">从一次相遇，开始新的可能</view></view>
-<view class="card"><view class="heading" style="font-size:34rpx;">青年公社活动产品</view><view class="muted">六大常设活动 · 从兴趣相遇，到成长与共创</view></view>
-<view class="product-grid">
- <view wx:for="{{products}}" wx:key="key" class="product-card">
-  <image wx:if="{{!posterErrors[item.key]}}" src="{{item.image}}" class="product-poster" mode="aspectFill" data-key="{{item.key}}" binderror="onPosterError"/>
-  <view wx:else class="product-placeholder">{{item.name}}</view>
-  <view class="product-name">{{item.name}}</view>
-  <view class="muted">{{item.category}}</view>
- </view>
-</view>
-<view class="card"><view class="heading" style="font-size:34rpx;">近期可报名活动</view></view>
 <scroll-view scroll-x="true" class="filter"><view class="filter-inner"><view wx:for="{{categories}}" wx:key="*this" data-value="{{item}}" bindtap="chooseCategory" class="filter-chip {{selected===item?'selected':''}}">{{item}}</view></view></scroll-view>
 <view wx:if="{{loading}}" class="card"><view class="muted">活动加载中…</view></view>
 <view wx:if="{{error}}" class="card"><view class="error">{{error}}</view><button size="mini" bindtap="load">重试</button></view>
 <view wx:for="{{visible}}" wx:key="id" class="card activity-card" data-id="{{item.id}}" bindtap="open">
- <image wx:if="{{item.posterSrc&&!posterErrors[item.productKey]}}" src="{{item.posterSrc}}" mode="aspectFill" class="event-cover" binderror="onPosterError" data-key="{{item.productKey}}"/>
+ <image wx:if="{{item.posterSrc}}" src="{{item.posterSrc}}" mode="aspectFill" class="event-cover"/>
  <view class="row"><text class="category">{{item.category}}</text><text class="muted">{{item.startDate}} {{item.startTime}}</text></view>
  <view class="activity-title">{{item.title}}</view>
  <view class="muted">📍 {{item.location}}</view>
