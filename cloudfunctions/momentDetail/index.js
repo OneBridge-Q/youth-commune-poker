@@ -1,9 +1,9 @@
+const {findMember}=require('./memberLookup');
 const cloud=require('wx-server-sdk');cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});const db=cloud.database();
 exports.main=async(event)=>{
  const openid=cloud.getWXContext().OPENID;if(!openid)throw Error('UNAUTHENTICATED');
- const members=await db.collection('members').where({_openid:openid}).limit(1).get();
- if(!members.data.length)throw Error('MEMBER_NOT_FOUND');
- const member=members.data[0];const type=event.type;
+ const member=await findMember(db,openid);
+ if(!member)throw Error('MEMBER_NOT_FOUND');const type=event.type;
  if(!['hand','champion'].includes(type)||typeof event.id!=='string'||!event.id)throw Error('INVALID_INPUT');
  const collection=type==='hand'?'hand_records':'champion_awards';
  const record=await db.collection(collection).doc(event.id).get().catch(()=>null);
