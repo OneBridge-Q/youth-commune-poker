@@ -15,16 +15,33 @@ exports.main=async(event={})=>{
  if(action==='list'){
   const status=['pending','verified','rejected','voided'].includes(event.status)?event.status:'pending';
   const r=await db.collection('hand_records').where({status,...(privileged?{}:{storeId:actor.storeId})}).orderBy('createdAt','desc').limit(50).get();
-  return {records:r.data.map(x=>({id:x._id,memberId:x.memberId,category:x.category,status:x.status,occurredAt:x.occurredAt,note:x.note||''}))};
+  return {records:r.data.map(x=>({id:x._id,memberId:x.memberId,category:x.category,status:x.status,occurredAt:x.occurredAt,note:x.note||'',isTest:x.isTest===true}))};
  }
  if(action==='create'){
-  const {memberId,storeId,sessionId=null,tableId=null,occurredAt,category,note=''}=event;
-  if(!safe(memberId)||!safe(storeId)||!TYPES.has(category)||!safe(occurredAt)||Number.isNaN(Date.parse(occurredAt))||typeof note!=='string'||note.length>500)throw Error('INVALID_INPUT');
+  const {memberId,storeId,sessionId=null,tableId=null,occurredAt,category,note='',isTest=false}=event;
+  if(!safe(memberId)||!safe(storeId)||!TYPES.has(category)||!safe(occurredAt)||Number.isNaN(Date.parse(occurredAt))||typeof note!=='string'||note.length>500||typeof isTest!=='boolean')throw Error('INVALID_INPUT');
   if(!privileged&&actor.storeId!==storeId)throw Error('WRONG_STORE');
   const m=await db.collection('members').doc(memberId).get().catch(()=>null);if(!m||!m.data)throw Error('MEMBER_NOT_FOUND');
   if(!privileged&&m.data.storeId!==storeId)throw Error('MEMBER_WRONG_STORE');
-  const data={memberId,storeId,sessionId,tableId,occurredAt:new Date(occurredAt),category,note,source:'admin_manual',status:'pending',actionDataStatus:'not_collected',createdBy:actor._id,createdAt:db.serverDate(),updatedAt:db.serverDate()};
+  const data={memberId,storeId,sessionId,tableId,occurredAt:new Date(occurredAt),category,note,isTest,source:'admin_manual',status:'pending',actionDataStatus:'not_collected',createdBy:actor._id,createdAt:db.serverDate(),updatedAt:db.serverDate()};
   const r=await db.collection('hand_records').add({data});return {id:r._id,status:'pending'};
+ }
+ if(action==='markTest'){
+  if(!privileged)throw Error('SUPERADMIN_REQUIRED');
+  if(!safe(event.id)||typeof event.isTest!=='boolean'||typeof event.reason!=='string'||event.reason.trim().length<5||event.reason.length>200)throw Error('INVALID_INPUT');
+  const r=await db.collection('hand_records').doc(event.id).get().catch(()=>null);
+  if(!r||!r.data)throw Error('NOT_FOUND');
+  const old=r.data.isTest===true;
+  if(old===event.isTest)return {id:event.id,isTest:old,unchanged:true};
+  const u=await db.collection('hand_records').where({_id:event.id,isTest:old?true:db.command.neq(true)}).update({data:{
+   isTest:event.isTest,testMarkedBy:actor._id,testMarkReason:event.reason.trim(),updatedAt:db.serverDate()
+  }});
+  if(!u.stats.updated)throw Error('CONCURRENT_UPDATE');
+  await db.collection('hand_audit').add({data:{
+   recordId:event.id,kind:'hand',action:'markTest',from:old,to:event.isTest,actorId:actor._id,
+   reason:event.reason.trim(),createdAt:db.serverDate()
+  }});
+  return {id:event.id,isTest:event.isTest};
  }
  if(action==='review'){
   if(!safe(event.id)||!['verified','rejected','voided'].includes(event.decision))throw Error('INVALID_INPUT');
