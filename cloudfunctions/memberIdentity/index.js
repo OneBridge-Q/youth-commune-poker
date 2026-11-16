@@ -42,6 +42,13 @@ exports.main=async function(event){
   }
   return {processed:batch.data.length,linked,existing,skipped,nextOffset:batch.data.length===30?offset+30:null};
  }
+ const existingLink=await links.doc(identityId(openid)).get().catch(function(){return null;});
+ if(existingLink&&existingLink.data){
+  const target=await db.collection('members').doc(existingLink.data.memberId).get().catch(function(){return null;});
+  if(!target||!target.data)throw Error('IDENTITY_MEMBER_MISSING');
+  if(existingLink.data.status!=='active')throw Error('IDENTITY_NOT_ACTIVE');
+  return {registered:true,linked:true,memberId:target.data._id,existing:true};
+ }
  const rows=await db.collection('members').where({_openid:openid}).limit(1).get();
  const member=rows.data[0];
  if(!member)return {registered:false,linked:false};
