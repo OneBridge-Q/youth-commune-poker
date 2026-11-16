@@ -1,0 +1,1 @@
+.summary-grid{display:flex;justify-content:space-around;margin-top:30rpx}.metric{text-align:center}.metric-number{font-size:56rpx;font-weight:700;color:#26354d}.timeline-item{padding:24rpx 0;border-bottom:1rpx solid #edf0f3}.timeline-date{font-size:23rpx;color:#a38959}.timeline-title{font-size:31rpx;font-weight:600;margin:8rpx 0}
