@@ -1,11 +1,12 @@
+var catalog=require('../../utils/activity-products.js');
 Page({
- data:{id:'',activity:null,myStatus:'none',loading:true,busy:false,error:''},
+ data:{id:'',activity:null,myStatus:'none',loading:true,busy:false,error:'',posterError:false},
  onLoad:function(options){this.setData({id:options.id||''});},
  onShow:function(){if(this.data.id)this.load();},
  load:function(){
   var page=this;page.setData({loading:true,error:''});
   wx.cloud.callFunction({name:'activityMember',data:{action:'detail',id:page.data.id}}).then(function(res){
-   var r=res.result||{};page.setData({activity:r.activity||null,myStatus:r.myStatus||'none',loading:false});
+   var r=res.result||{};page.setData({activity:r.activity?catalog.decorate(r.activity):null,posterError:false,myStatus:r.myStatus||'none',loading:false});
   }).catch(function(e){console.error('[activity:detail]',e);page.setData({loading:false,error:'活动已下架或暂时无法加载'});});
  },
  apply:function(){
@@ -29,5 +30,6 @@ Page({
    }).catch(function(e){console.error('[activity:cancel]',e);wx.showToast({title:'取消失败',icon:'none'});}).then(function(){page.setData({busy:false});});
   }});
  },
+ onPosterError:function(){this.setData({posterError:true});},
  register:function(){wx.switchTab({url:'/pages/profile/index'});}
 });
