@@ -10,20 +10,37 @@ exports.main=async(event={})=>{
  if(action==='list'){
   const status=['pending','verified','rejected','voided'].includes(event.status)?event.status:'pending';
   const q=await db.collection('champion_awards').where({status,...(isRoot?{}:{storeId:actor.storeId})}).orderBy('createdAt','desc').limit(30).get();
-  return {records:q.data.map(x=>({id:x._id,memberId:x.memberId,eventName:x.eventName,status:x.status,certificateId:x.certificateId||''}))};
+  return {records:q.data.map(x=>({id:x._id,memberId:x.memberId,eventName:x.eventName,status:x.status,certificateId:x.certificateId||'',isTest:x.isTest===true}))};
  }
  if(action==='mine'){
   const q=await db.collection('champion_awards').where({memberId:actor._id,status:'verified'}).orderBy('awardedAt','desc').limit(30).get();
   return {records:q.data.map(x=>({id:x._id,eventName:x.eventName,certificateId:x.certificateId||''}))};
  }
  if(action==='create'){
-  const {memberId,storeId,eventName,awardedAt}=event;
-  if(!valid(memberId)||!valid(storeId)||!valid(eventName)||!valid(awardedAt)||Number.isNaN(Date.parse(awardedAt)))throw Error('INVALID_INPUT');
+  const {memberId,storeId,eventName,awardedAt,isTest=false}=event;
+  if(!valid(memberId)||!valid(storeId)||!valid(eventName)||!valid(awardedAt)||Number.isNaN(Date.parse(awardedAt))||typeof isTest!=='boolean')throw Error('INVALID_INPUT');
   if(!isRoot&&actor.storeId!==storeId)throw Error('WRONG_STORE');
   const member=await db.collection('members').doc(memberId).get().catch(()=>null);
   if(!member||!member.data||(!isRoot&&member.data.storeId!==storeId))throw Error('MEMBER_NOT_FOUND');
-  const r=await db.collection('champion_awards').add({data:{memberId,storeId,eventName,awardedAt:new Date(awardedAt),status:'pending',source:'admin_manual',createdBy:actor._id,createdAt:db.serverDate(),updatedAt:db.serverDate()}});
+  const r=await db.collection('champion_awards').add({data:{memberId,storeId,eventName,awardedAt:new Date(awardedAt),isTest,status:'pending',source:'admin_manual',createdBy:actor._id,createdAt:db.serverDate(),updatedAt:db.serverDate()}});
   return {id:r._id,status:'pending'};
+ }
+ if(action==='markTest'){
+  if(!isRoot)throw Error('SUPERADMIN_REQUIRED');
+  if(!valid(event.id)||typeof event.isTest!=='boolean'||typeof event.reason!=='string'||event.reason.trim().length<5||event.reason.length>200)throw Error('INVALID_INPUT');
+  const r=await db.collection('champion_awards').doc(event.id).get().catch(()=>null);
+  if(!r||!r.data)throw Error('NOT_FOUND');
+  const old=r.data.isTest===true;
+  if(old===event.isTest)return {id:event.id,isTest:old,unchanged:true};
+  const result=await db.collection('champion_awards').where({_id:event.id,isTest:old?true:db.command.neq(true)}).update({data:{
+   isTest:event.isTest,testMarkedBy:actor._id,testMarkReason:event.reason.trim(),updatedAt:db.serverDate()
+  }});
+  if(!result.stats.updated)throw Error('CONCURRENT_UPDATE');
+  await db.collection('hand_audit').add({data:{
+   recordId:event.id,kind:'champion',action:'markTest',from:old,to:event.isTest,actorId:actor._id,
+   reason:event.reason.trim(),createdAt:db.serverDate()
+  }});
+  return {id:event.id,isTest:event.isTest};
  }
  if(action==='review'){
   if(!valid(event.id)||!['verified','rejected','voided'].includes(event.decision))throw Error('INVALID_INPUT');
