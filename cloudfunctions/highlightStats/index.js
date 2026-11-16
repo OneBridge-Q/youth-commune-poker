@@ -10,6 +10,7 @@ exports.main=async()=>{
  const memberId=member._id;
  // MVP pagination ceiling: return only latest 100 verified highlights; do not treat this as all-time count at scale.
  const records=await db.collection('hand_records').where({memberId,status:'verified'}).orderBy('occurredAt','desc').limit(100).get();
- const counts={};for(const r of records.data)counts[r.category]=(counts[r.category]||0)+1;
- return {total:records.data.length,counts,recent:records.data.slice(0,10).map(r=>({id:r._id,category:r.category,occurredAt:r.occurredAt})),partial:records.data.length===100};
+ const official=records.data.filter(function(x){return x.isTest!==true;});
+ const counts={};for(const r of official)counts[r.category]=(counts[r.category]||0)+1;
+ return {total:official.length,counts,recent:official.slice(0,10).map(r=>({id:r._id,category:r.category,occurredAt:r.occurredAt})),partial:records.data.length===100};
 };
