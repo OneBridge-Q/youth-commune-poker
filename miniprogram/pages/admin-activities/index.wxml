@@ -7,6 +7,11 @@
  <view class="row"><picker mode="date" value="{{date}}" bindchange="onDate"><view class="pick">{{date}} ▼</view></picker><picker mode="time" value="{{time}}" bindchange="onTime"><view class="pick">{{time}} ▼</view></picker></view>
  <view class="label">活动地点</view><input value="{{location}}" bindinput="onLocation" maxlength="120" placeholder="输入具体场地信息"/>
  <view class="label">活动介绍</view><textarea value="{{description}}" bindinput="onDescription" maxlength="500" placeholder="活动内容、适合人群、注意事项"/>
+ <view class="label">活动海报（选填）</view>
+ <view class="muted">从相册选择之前设计的海报，建议竖版图片，文件不超过5MB。</view>
+ <image wx:if="{{posterLocalPath}}" src="{{posterLocalPath}}" mode="widthFix" style="display:block;width:100%;border-radius:14rpx;margin:18rpx 0;"/>
+ <button size="mini" bindtap="choosePoster">{{posterLocalPath?'重新选择海报':'上传活动海报'}}</button>
+ <button wx:if="{{posterLocalPath}}" size="mini" bindtap="removePoster">移除海报</button>
  <button type="primary" bindtap="create" loading="{{busy}}" disabled="{{busy}}" style="margin-top:25rpx;">创建活动草稿</button>
 </view>
 <view class="card"><view class="heading">活动管理</view><button size="mini" bindtap="load">刷新</button>
