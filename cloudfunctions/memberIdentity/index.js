@@ -24,7 +24,14 @@ exports.main=async function(event){
   const issues=[];
   for(const member of rows.data){
    if(member.schemaVersion===2)newSchema++;
-   if(!member._openid){noLegacyOpenId++;continue;}
+   if(!member._openid){
+    noLegacyOpenId++;
+    const candidate=await links.where({memberId:member._id,appId:APP_ID}).limit(2).get();
+    if(!candidate.data.length){missing++;issues.push({memberId:member._id,issue:'NO_IDENTITY_LINK'});}
+    else if(candidate.data.some(function(x){return x.status!=='active';})){conflicts++;issues.push({memberId:member._id,issue:'LINK_NOT_ACTIVE'});}
+    else matched++;
+    continue;
+   }
    const link=await links.doc(identityId(member._openid)).get().catch(function(){return null});
    if(!link||!link.data){missing++;continue;}
    if(link.data.memberId!==member._id||link.data.status!=='active'){
