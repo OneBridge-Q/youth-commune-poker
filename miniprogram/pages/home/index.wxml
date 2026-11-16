@@ -4,7 +4,7 @@
   <image wx:if="{{registered&&avatarSrc}}" class="member-avatar" src="{{avatarSrc}}" mode="aspectFill"/>
   <view class="member-info">
    <view class="heading">{{registered?nickname:'欢迎来到青年公社'}}</view>
-   <view class="muted" wx:if="{{registered}}">{{rank}} · {{memberNo}}</view>
+   <view class="muted" wx:if="{{registered}}">一起探索，持续成长</view>
    <view class="muted" wx:else>认识同行者，一起参与、创造与成长</view>
   </view>
  </view>
@@ -19,6 +19,10 @@
 <view class="card" bindtap="goActivities">
  <view class="heading">青年公社活动 ›</view>
  <view class="muted">社交交流 · 知识分享 · 户外运动 · 创业共创</view>
+</view>
+<view wx:if="{{registered}}" class="card" bindtap="goGrowth">
+ <view class="heading">我的成长履历 ›</view>
+ <view class="muted">活动足迹 · 已认证荣誉 · 成长时间线</view>
 </view>
 <view wx:if="{{registered}}" class="card">
  <view class="row"><text>技术分</text><text>{{skillPoints}}</text></view>
