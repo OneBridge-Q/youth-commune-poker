@@ -5,6 +5,9 @@ Page({
   wx.cloud.callFunction({name:'memberHome'}).then(function(r){
    var result=r.result||{},m=result.member||{};
    page.setData({registered:!!result.registered,nickname:m.nickname||'新会员',memberNo:m.memberNo||'',skillPoints:m.skillPoints||0,rewardPoints:m.rewardPoints||0,rank:m.rank||'待评级'});
+   // Best-effort: associate this verified WeChat login with the existing permanent member record.
+   // If not yet deployed, member login and all existing features continue to work.
+   if(result.registered){wx.cloud.callFunction({name:'memberIdentity'}).catch(function(e){console.warn('[memberIdentity:sync]',e);});}
    if(m.avatarFileID){
     wx.cloud.getTempFileURL({fileList:[m.avatarFileID]}).then(function(f){
      var url=f.fileList&&f.fileList[0]&&f.fileList[0].tempFileURL;
