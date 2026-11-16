@@ -1,3 +1,4 @@
+const {findMember}=require('./memberLookup');
 const cloud=require('wx-server-sdk');
 cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});
 const db=cloud.database();
@@ -9,8 +10,7 @@ async function getEvent(id){if(!plain(id,128))throw Error('INVALID_ID');const r=
 exports.main=async(event={})=>{
  const openid=cloud.getWXContext().OPENID;
  if(!openid)throw Error('UNAUTHENTICATED');
- const r=await db.collection('members').where({_openid:openid}).limit(1).get();
- const actor=r.data[0];if(!actor||!['admin','superadmin'].includes(actor.role)||!actor.storeId)throw Error('FORBIDDEN');
+ const actor=await findMember(db,openid);if(!actor||!['admin','superadmin'].includes(actor.role)||!actor.storeId)throw Error('FORBIDDEN');
  const action=event.action;
  if(action==='list'){
   const a=await db.collection('activities').where(actor.role==='superadmin'?{}:{storeId:actor.storeId}).limit(100).get();
