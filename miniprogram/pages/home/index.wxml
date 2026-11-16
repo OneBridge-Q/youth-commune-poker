@@ -3,7 +3,7 @@
  <view class="brand-top"><view class="brand-mark"></view><text>红圈 club</text><text class="brand-city">深圳 · 南山</text></view>
  <view class="hero">
   <view class="hero-ring ring-one"></view><view class="hero-ring ring-two"></view>
-  <view class="hero-content"><view class="hero-eyebrow">RED CIRCLE / MEET · PLAY · CREATE</view><view class="hero-title">在红圈，<br/>遇见同频的人。</view>
+  <view class="hero-content"><view class="hero-eyebrow">RED CIRCLE / MEET · PLAY · CREATE</view><view class="hero-title"><view>在红圈，</view><view>遇见同频的人。</view></view>
    <view class="hero-pillars">智力竞技 · 兴趣社交 · 青年共创</view>
    <view class="hero-description">一个让思考、兴趣和想法相遇的复合型社群空间。</view>
    <view class="hero-location">深圳市南山区</view>
