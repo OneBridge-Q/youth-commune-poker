@@ -11,7 +11,8 @@
     "pages/activities/index",
     "pages/activity-detail/index",
     "pages/admin-activities/index",
-    "pages/growth/index"
+    "pages/growth/index",
+    "pages/admin-recaps/index"
   ],
   "window": {
     "navigationBarTitleText": "青年公社 Poker Club",
@@ -23,18 +24,9 @@
     "color": "#8A9099",
     "selectedColor": "#202B3C",
     "list": [
-      {
-        "pagePath": "pages/home/index",
-        "text": "首页"
-      },
-      {
-        "pagePath": "pages/ranking/index",
-        "text": "天梯"
-      },
-      {
-        "pagePath": "pages/profile/index",
-        "text": "我的"
-      }
+      {"pagePath":"pages/home/index","text":"首页"},
+      {"pagePath":"pages/ranking/index","text":"天梯"},
+      {"pagePath":"pages/profile/index","text":"我的"}
     ]
   },
   "lazyCodeLoading": "requiredComponents"

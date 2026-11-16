@@ -1,0 +1,20 @@
+<view class="card"><view class="heading">往期活动回顾</view><view class="muted" style="margin-top:16rpx;line-height:1.8;">关联已发布且真实结束的活动，上传现场照片与回顾文字。不会根据报名、冠军或测试记录自动生成精彩回顾。</view></view>
+<view wx:if="{{loading}}" class="card">正在加载…</view>
+<view wx:if="{{error}}" class="card" style="color:#B52E34;">{{error}}<button size="mini" disabled="{{busy}}" bindtap="load">刷新</button></view>
+<view class="card">
+ <picker disabled="{{busy}}" range="{{activities}}" range-key="label" value="{{selectedIndex<0?0:selectedIndex}}" bindchange="chooseActivity"><view style="padding:20rpx 0;">{{selected?selected.label:'选择对应的已发布活动'}} ▼</view></picker>
+ <view wx:if="{{!activities.length&&!loading}}" class="muted">暂无活动。先完成一场真实活动，再上传回顾。</view>
+ <block wx:if="{{selected}}">
+  <view class="muted">当前回顾：{{selected.recapStatus==='published'?(selected.isTest?'测试记录（首页不展示）':'已发布'):selected.recapStatus==='hidden'?'已下架':'未发布'}}</view>
+  <view wx:if="{{!selected.canPublish}}" style="margin:20rpx 0;color:#B52E34;">这场活动尚未开始或未发布，不能发布往期回顾。</view>
+  <view style="margin-top:28rpx;">回顾标题</view><input disabled="{{busy}}" value="{{title}}" bindinput="onTitle" maxlength="60" placeholder="例如：一场从好奇心开始的交流" style="padding:20rpx 0;border-bottom:1rpx solid #ddd;"/>
+  <view style="margin-top:28rpx;">回顾文字</view><textarea disabled="{{busy}}" value="{{body}}" bindinput="onBody" maxlength="800" placeholder="记录实际发生的交流、体验与收获，不填写虚构人数或成果。" style="width:100%;height:220rpx;margin:16rpx 0;"/>
+  <button disabled="{{busy}}" bindtap="choosePhotos">{{photos.length?'重新选择全部照片':'上传活动现场照片（1至3张）'}}</button>
+  <view style="display:flex;margin:20rpx 0;"><image wx:for="{{photos}}" wx:key="path" src="{{item.path}}" mode="aspectFill" style="width:30%;height:170rpx;margin-right:3%;border-radius:12rpx;"/></view>
+  <view class="muted">每张不超过5MB。修改已有回顾时，请重新选择本次要展示的全部照片。</view>
+  <checkbox-group bindchange="onChecks" style="margin-top:28rpx;line-height:1.8;font-size:26rpx;"><label style="display:block;"><checkbox disabled="{{busy}}" value="completed" checked="{{completed}}"/>确认活动真实发生且已经结束</label><label style="display:block;margin-top:16rpx;"><checkbox disabled="{{busy}}" value="consent" checked="{{consent}}"/>确认拥有照片使用权，已取得画面中可识别参与者公开展示的必要同意</label></checkbox-group>
+  <view class="row" style="align-items:center;"><text>测试回顾（不在首页展示）</text><switch disabled="{{busy}}" checked="{{isTest}}" bindchange="onTest"/></view>
+  <button type="primary" disabled="{{busy||!selected.canPublish}}" loading="{{busy}}" bindtap="save" style="margin-top:30rpx;">{{isTest?'保存测试回顾':'发布到首页'}}</button>
+  <button wx:if="{{selected.recapStatus==='published'}}" disabled="{{busy}}" bindtap="hide" style="margin-top:18rpx;">下架这条回顾</button>
+ </block>
+</view>

@@ -1,26 +1,24 @@
+<import src="../../templates/value-rule.wxml"/>
 <view class="card">
  <view class="member-head">
   <image wx:if="{{registered&&avatarSrc}}" class="member-avatar" src="{{avatarSrc}}" mode="aspectFill"/>
   <view class="member-info">
    <view class="heading">{{registered?nickname:'个人中心'}}</view>
    <view wx:if="{{registered}}" class="muted">我的青年公社成长旅程</view>
-   <view wx:else class="muted">注册成为会员，开始记录你的青年公社旅程</view>
+   <view wx:else class="muted">注册成为会员，开始记录你的成长旅程</view>
   </view>
  </view>
  <view wx:if="{{registered}}" class="profile-edit" bindtap="editProfile">编辑头像与昵称 ›</view>
 </view>
+<template is="value-rule"/>
 <view wx:if="{{!registered}}" class="card">
- <view class="heading" style="font-size:32rpx;">加入青年公社</view>
+ <view class="heading" style="font-size:32rpx;">加入红圈 club</view>
  <button type="primary" bindtap="openRegister" style="margin-top:24rpx;">创建会员档案</button>
 </view>
-<view class="card" bindtap="openActivities"><view class="heading">青年公社活动 ›</view><view class="muted">发现近期活动，认识新的朋友</view></view>
+<view class="card" bindtap="openActivities"><view class="heading">红圈活动 ›</view><view class="muted">发现近期活动，认识新的朋友</view></view>
 <block wx:if="{{registered}}">
- <view class="card" bindtap="openGrowth">
-  <view class="heading">我的成长履历 ›</view>
-  <view class="muted">活动报名、认证荣誉及成长时间线</view>
- </view>
- <view class="card">
-  <view class="heading">我已报名的活动</view>
+ <view class="card" bindtap="openGrowth"><view class="heading">我的成长履历 ›</view><view class="muted">活动报名、认证荣誉及成长时间线</view></view>
+ <view class="card"><view class="heading">我已报名的活动</view>
   <view wx:for="{{myActivities}}" wx:key="activityId" class="row" data-id="{{item.activityId}}" bindtap="openActivity"><view><view>{{item.title}}</view><view class="muted">{{item.startDate}} {{item.startTime}}</view></view><text>查看 ›</text></view>
   <view wx:if="{{!myActivities.length}}" class="muted">暂无报名，去活动广场看看吧。</view>
  </view>
@@ -31,6 +29,7 @@
   <view wx:if="{{!champions.length}}" class="muted">暂无已认证的冠军荣誉</view>
  </view>
  <view wx:if="{{isAdmin}}" class="card" bindtap="openActivityAdmin"><view class="heading">活动管理 ›</view><view class="muted">发布活动 · 管理报名名单</view></view>
+ <navigator wx:if="{{isAdmin}}" url="/pages/admin-recaps/index" class="card"><view class="heading">活动回顾管理 ›</view><view class="muted">真实活动照片 · 发布与下架回顾</view></navigator>
  <view wx:if="{{isAdmin}}" class="card" bindtap="openAdmin"><view class="heading">精彩手牌管理 ›</view><view class="muted">录入、审核与撤销</view></view>
  <view wx:if="{{isAdmin}}" class="card" bindtap="openChampionAdmin"><view class="heading">冠军证书管理 ›</view><view class="muted">录入、审核与撤销证书</view></view>
 </block>
