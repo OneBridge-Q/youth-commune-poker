@@ -1,1 +1,1 @@
-<view class="card"><view class="heading">技术天梯榜</view><view class="muted">{{message}}</view></view>
+<view class="card"><view class="heading">战力天梯榜</view><view class="muted">{{message}}</view></view>
