@@ -14,7 +14,7 @@ exports.main=async(event={})=>{
  }
  if(action==='mine'){
   const q=await db.collection('champion_awards').where({memberId:actor._id,status:'verified'}).orderBy('awardedAt','desc').limit(30).get();
-  return {records:q.data.map(x=>({id:x._id,eventName:x.eventName,certificateId:x.certificateId||''}))};
+  return {records:q.data.filter(x=>x.isTest!==true).map(x=>({id:x._id,eventName:x.eventName,certificateId:x.certificateId||''}))};
  }
  if(action==='create'){
   const {memberId,storeId,eventName,awardedAt,isTest=false}=event;
