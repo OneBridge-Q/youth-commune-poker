@@ -1,12 +1,13 @@
+const {findMember}=require('./memberLookup');
 const cloud=require('wx-server-sdk');
 cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});
 const db=cloud.database();
 exports.main=async()=>{
  const openid=cloud.getWXContext().OPENID;
  if(!openid) throw Error('UNAUTHENTICATED');
- const q=await db.collection('members').where({_openid:openid}).limit(1).get();
- if(!q.data.length)return {total:0,counts:{},recent:[]};
- const memberId=q.data[0]._id;
+ const member=await findMember(db,openid);
+ if(!member)return {total:0,counts:{},recent:[]};
+ const memberId=member._id;
  // MVP pagination ceiling: return only latest 100 verified highlights; do not treat this as all-time count at scale.
  const records=await db.collection('hand_records').where({memberId,status:'verified'}).orderBy('occurredAt','desc').limit(100).get();
  const counts={};for(const r of records.data)counts[r.category]=(counts[r.category]||0)+1;
