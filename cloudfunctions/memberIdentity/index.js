@@ -13,6 +13,35 @@ exports.main=async function(event){
  const openid=ctx.OPENID;
  if(!openid)throw Error('UNAUTHENTICATED');
  if(ctx.APPID&&ctx.APPID!==APP_ID)throw Error('APP_ID_MISMATCH');
+ if(event&&event.action==='backfill'){
+  const adminRows=await db.collection('members').where({_openid:openid}).limit(1).get();
+  const admin=adminRows.data[0];
+  if(!admin||admin.role!=='superadmin')throw Error('FORBIDDEN');
+  const offset=Number(event.offset||0);
+  if(!Number.isInteger(offset)||offset<0||offset>10000)throw Error('INVALID_OFFSET');
+  const batch=await db.collection('members').orderBy('_id','asc').skip(offset).limit(30).get();
+  let linked=0,existing=0,skipped=0;
+  for(const m of batch.data){
+   if(!m._openid){skipped++;continue;}
+   const id=identityId(m._openid);
+   const prior=await links.doc(id).get().catch(function(){return null;});
+   if(prior&&prior.data){
+    if(prior.data.memberId!==m._id)throw Error('IDENTITY_CONFLICT');
+    existing++;continue;
+   }
+   try{
+    await links.add({data:{_id:id,memberId:m._id,provider:'wechat_miniprogram',
+      appId:APP_ID,openidHash:crypto.createHash('sha256').update(m._openid).digest('hex'),
+      verification:'legacy_admin_backfill',status:'active',linkedAt:db.serverDate()}});
+    linked++;
+   }catch(error){
+    const again=await links.doc(id).get().catch(function(){return null;});
+    if(!again||!again.data||again.data.memberId!==m._id)throw error;
+    existing++;
+   }
+  }
+  return {processed:batch.data.length,linked,existing,skipped,nextOffset:batch.data.length===30?offset+30:null};
+ }
  const rows=await db.collection('members').where({_openid:openid}).limit(1).get();
  const member=rows.data[0];
  if(!member)return {registered:false,linked:false};
