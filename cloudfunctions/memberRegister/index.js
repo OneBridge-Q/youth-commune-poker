@@ -47,7 +47,11 @@ exports.main=async function(event){
  const ctx=cloud.getWXContext(),openid=ctx.OPENID;
  if(!openid)throw Error('UNAUTHENTICATED');
  if(ctx.APPID&&ctx.APPID!==APP_ID)throw Error('APP_ID_MISMATCH');
- const old=await findMember(db,openid);
+ // A previous attempt may have inserted members while its identity link is still provisioning.
+ // Registration retries must be able to finish that same member without creating another.
+ let old=null;
+ try{old=await findMember(db,openid);}
+ catch(error){if(!error||error.message!=='REGISTRATION_INCOMPLETE')throw error;}
  if(event.action==='updateProfile'){
   if(!old)throw Error('REGISTER_REQUIRED');
   const change={nickname:validateName(event.nickname),updatedAt:db.serverDate()};
