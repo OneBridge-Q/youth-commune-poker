@@ -24,6 +24,7 @@ Page({
  openAdmin:function(){wx.navigateTo({url:'/pages/admin-highlights/index'});},
  openChampionAdmin:function(){wx.navigateTo({url:'/pages/admin-champions/index'});},
  openActivityAdmin:function(){wx.navigateTo({url:'/pages/admin-activities/index'});},
+ openGrowth:function(){wx.navigateTo({url:'/pages/growth/index'});},
  openActivities:function(){wx.navigateTo({url:'/pages/activities/index'});},
  openActivity:function(e){wx.navigateTo({url:'/pages/activity-detail/index?id='+encodeURIComponent(e.currentTarget.dataset.id)});},
  openHighlights:function(){wx.navigateTo({url:'/pages/highlights/index'});},
