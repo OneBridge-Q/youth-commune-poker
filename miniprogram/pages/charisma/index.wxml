@@ -1,0 +1,5 @@
+<import src="../../templates/value-rule.wxml"/>
+<view class="card charisma-card"><view class="muted">红圈 club · 社区贡献与权益</view><view class="heading">我的魅力值</view><view wx:if="{{loading}}" class="muted balance-message">正在加载…</view><view wx:elif="{{error}}" class="balance-message">{{error}}<button size="mini" bindtap="load">重试</button></view><block wx:elif="{{registered}}"><view class="balance-number">{{balance}}</view><view class="muted">可兑换余额</view></block><button wx:else type="primary" bindtap="register" style="margin-top:24rpx;">注册后查看我的魅力值</button></view>
+<template is="value-rule"/>
+<view class="card"><view class="section-title">魅力值与季度榜</view><view class="body-copy">魅力值用于记录独立的社区贡献。礼物、门票和权益的具体兑换范围，以后续公布的规则为准。</view><view class="body-copy">季度榜按每个自然季度有效获得的魅力值累计排名；兑换消费不扣排行榜分数，换季不会清空可兑换余额。</view><view class="body-copy">季度划分：1—3月、4—6月、7—9月、10—12月，按北京时间在新季度首日00:00切换。往期记录保留，不改动历史账目。</view><button class="ranking-button" bindtap="goRanking">查看本季魅力值榜 ›</button></view>
+<view class="card"><view class="section-title">当前功能说明</view><view class="body-copy">本页面仅展示余额与规则。魅力值发放、兑换和扣减流程尚未开放，不会因查看页面、榜单切换或牌局输赢自动增减数值。</view></view>

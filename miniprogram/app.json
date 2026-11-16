@@ -12,7 +12,8 @@
     "pages/activity-detail/index",
     "pages/admin-activities/index",
     "pages/growth/index",
-    "pages/admin-recaps/index"
+    "pages/admin-recaps/index",
+    "pages/charisma/index"
   ],
   "window": {
     "navigationBarTitleText": "青年公社 Poker Club",
