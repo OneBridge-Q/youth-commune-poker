@@ -12,17 +12,7 @@ Page({
    var activities=(res.result&&res.result.activities)||[];
    page.setData({activities:activities,loading:false});
    page.filter();
-   activities.forEach(function(item){
-    if(!item.posterFileID)return;
-    wx.cloud.getTempFileURL({fileList:[item.posterFileID]}).then(function(f){
-     var file=f.fileList&&f.fileList[0];
-     if(!file||!file.tempFileURL)return;
-     var next=page.data.activities.map(function(a){
-      if(a.id===item.id){var b=Object.assign({},a);b.posterSrc=file.tempFileURL;return b;}return a;
-     });
-     page.setData({activities:next});page.filter();
-    }).catch(function(err){console.warn('[activities:poster]',err);});
-   });
+
   }).catch(function(e){console.error('[activities:list]',e);page.setData({loading:false,error:'活动加载失败，请检查云函数和数据库集合'});});
  },
  open:function(e){wx.navigateTo({url:'/pages/activity-detail/index?id='+encodeURIComponent(e.currentTarget.dataset.id)});}
