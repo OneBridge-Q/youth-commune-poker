@@ -1,5 +1,5 @@
 Page({
- data:{title:'',description:'',location:'',date:'',time:'19:30',categories:['社交交流','知识分享','户外运动','创业共创','其他'],categoryIndex:0,activities:[],loading:false,busy:false,error:'',posterLocalPath:''},
+ data:{title:'',description:'',location:'',date:'',time:'19:30',categories:['社交交流','知识分享','户外运动','创业共创','其他'],categoryIndex:0,activities:[],loading:false,busy:false,error:'',posterLocalPath:'',posterExt:'jpg'},
  onLoad:function(){this.setData({date:new Date(Date.now()+86400000).toISOString().slice(0,10)});},
  onShow:function(){this.load();},
  onTitle:function(e){this.setData({title:e.detail.value});},
@@ -14,7 +14,10 @@ Page({
    var file=res.tempFiles&&res.tempFiles[0];
    if(!file||!file.tempFilePath)return;
    if(file.size>5*1024*1024)return wx.showModal({title:'图片过大',content:'请选择不超过5MB的活动海报',showCancel:false});
-   page.setData({posterLocalPath:file.tempFilePath});
+   var extMatch=file.tempFilePath.match(/\.(png|jpe?g|webp)(?:\?|$)/i);
+   var ext=extMatch?extMatch[1].toLowerCase():'jpg';
+   if(ext==='jpeg')ext='jpg';
+   page.setData({posterLocalPath:file.tempFilePath,posterExt:ext});
   }});
  },
  removePoster:function(){this.setData({posterLocalPath:''});},
@@ -31,7 +34,7 @@ Page({
   var posterId='';
   var upload=Promise.resolve();
   if(page.data.posterLocalPath){
-   upload=wx.cloud.uploadFile({cloudPath:'activity-posters/cover_'+Date.now()+'_'+Math.random().toString(36).slice(2,12)+'.jpg',filePath:page.data.posterLocalPath}).then(function(r){
+   upload=wx.cloud.uploadFile({cloudPath:'activity-posters/cover_'+Date.now()+'_'+Math.random().toString(36).slice(2,12)+'.'+page.data.posterExt,filePath:page.data.posterLocalPath}).then(function(r){
     if(!r.fileID)throw Error('POSTER_UPLOAD_FAILED');
     posterId=r.fileID;
    });
