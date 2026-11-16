@@ -13,6 +13,27 @@ exports.main=async function(event){
  const openid=ctx.OPENID;
  if(!openid)throw Error('UNAUTHENTICATED');
  if(ctx.APPID&&ctx.APPID!==APP_ID)throw Error('APP_ID_MISMATCH');
+ if(event&&event.action==='audit'){
+  const adminRows=await db.collection('members').where({_openid:openid}).limit(1).get();
+  const admin=adminRows.data[0];
+  if(!admin||admin.role!=='superadmin')throw Error('FORBIDDEN');
+  const offset=Number(event.offset||0);
+  if(!Number.isInteger(offset)||offset<0||offset>10000)throw Error('INVALID_OFFSET');
+  const rows=await db.collection('members').orderBy('_id','asc').skip(offset).limit(30).get();
+  let matched=0,missing=0,conflicts=0,newSchema=0,noLegacyOpenId=0;
+  const issues=[];
+  for(const member of rows.data){
+   if(member.schemaVersion===2)newSchema++;
+   if(!member._openid){noLegacyOpenId++;continue;}
+   const link=await links.doc(identityId(member._openid)).get().catch(function(){return null});
+   if(!link||!link.data){missing++;continue;}
+   if(link.data.memberId!==member._id||link.data.status!=='active'){
+    conflicts++;issues.push({memberId:member._id,issue:'IDENTITY_MISMATCH_OR_INACTIVE'});
+   }else matched++;
+  }
+  return {processed:rows.data.length,matched,missing,conflicts,newSchema,noLegacyOpenId,
+   issues:issues,nextOffset:rows.data.length===30?offset+30:null};
+ }
  if(event&&event.action==='backfill'){
   const adminRows=await db.collection('members').where({_openid:openid}).limit(1).get();
   const admin=adminRows.data[0];
