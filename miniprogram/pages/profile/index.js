@@ -1,13 +1,13 @@
 function displayScore(value){return typeof value==='number'&&isFinite(value)?String(value):'0';}
 Page({
- data:{loading:true,error:'',registered:false,nickname:'',avatarSrc:'',initial:'圈',skillDisplay:'—',charmDisplay:'—',isAdmin:false,adminExpanded:false,champions:[],championPreview:[],myActivities:[],activityPreview:[],showAllActivities:false,showAllChampions:false,activitiesLoading:false,activitiesError:'',championsLoading:false,championsError:''},
+ data:{loading:true,error:'',registered:false,nickname:'',avatarSrc:'',initial:'圈',skillDisplay:'—',charmDisplay:'—',isAdmin:false,adminExpanded:false,champions:[],championPreview:[],recapLabels:[],myActivities:[],activityPreview:[],showAllActivities:false,showAllChampions:false,activitiesLoading:false,activitiesError:'',championsLoading:false,championsError:''},
  onLoad:function(){wx.setNavigationBarTitle({title:'我的 · 红圈 club'});},
  onShow:function(){this.loadProfile();},
  onHide:function(){this._seq=(this._seq||0)+1;},
  onUnload:function(){this._seq=(this._seq||0)+1;},
  loadProfile:function(){
   var page=this,seq=(page._seq||0)+1;page._seq=seq;
-  page.setData({loading:true,error:'',registered:false,isAdmin:false,avatarSrc:'',nickname:'',skillDisplay:'—',charmDisplay:'—',champions:[],championPreview:[],myActivities:[],activityPreview:[],activitiesError:'',championsError:''});
+  page.setData({loading:true,error:'',registered:false,isAdmin:false,avatarSrc:'',nickname:'',skillDisplay:'—',charmDisplay:'—',champions:[],championPreview:[],recapLabels:[],myActivities:[],activityPreview:[],activitiesError:'',championsError:''});
   wx.cloud.callFunction({name:'memberHome'}).then(function(response){
    if(seq!==page._seq)return;
    var result=response.result||{},m=result.member||{};
@@ -26,7 +26,7 @@ Page({
   var page=this;page.setData({activitiesLoading:true,activitiesError:''});
   wx.cloud.callFunction({name:'activityMember',data:{action:'mine'}}).then(function(r){
    if(seq!==page._seq)return;var rows=(r.result&&r.result.applications)||[];
-   page.setData({myActivities:rows,activityPreview:page.data.showAllActivities?rows:rows.slice(0,3),activitiesLoading:false});
+   page.setData({recapLabels:(r.result&&r.result.recapLabels)||[],myActivities:rows,activityPreview:page.data.showAllActivities?rows:rows.slice(0,3),activitiesLoading:false});
   }).catch(function(){if(seq===page._seq)page.setData({activitiesLoading:false,activitiesError:'报名记录加载失败'});});
  },
  loadChampions:function(seq){

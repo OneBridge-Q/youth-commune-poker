@@ -1,0 +1,2 @@
+.recap-title { margin: 26rpx 0 10rpx; font-weight: 600; }
+.recap-row { margin-top: 12rpx; }
