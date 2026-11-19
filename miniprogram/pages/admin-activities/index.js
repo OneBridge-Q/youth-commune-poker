@@ -25,7 +25,7 @@ Page({
  },
  act:function(e){
   var page=this,action=e.currentTarget.dataset.action,id=e.currentTarget.dataset.id;if(page.data.busy)return;
-  var text=action==='publish'?'确认发布活动，让会员可以报名？':action==='markTest'?'确认仅用于联调？标记后不计正式成长，本入口不支持恢复成正式活动。':'确认取消此活动？';
+  var text=action==='publish'?'确认发布活动，让会员可以报名？':action==='markTest'?'确认仅用于联调？标记后不计正式成长，本入口不支持恢复成正式活动。':action==='openFeedback'?'确认活动已结束，并向已签到会员开放问卷？':'确认取消此活动？';
   wx.showModal({title:'活动操作',content:text,success:function(result){if(!result.confirm)return;page.setData({busy:true});
    wx.cloud.callFunction({name:'activityAdmin',data:{action:action,id:id}}).then(function(){wx.showToast({title:'操作成功'});page.load();}).catch(function(err){console.error('[admin:activities]',err);wx.showToast({title:'操作失败',icon:'none'});}).then(function(){page.setData({busy:false});});
   }});

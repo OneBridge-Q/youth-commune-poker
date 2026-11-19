@@ -3,6 +3,7 @@ const {findMember,APP_ID}=require('./memberLookup');
 const cloud=require('wx-server-sdk');
 const {createRegistration,signupId}=require('./registration');
 const {readParticipation}=require('./participation');
+const {feedbackStatus,submitFeedback,readRecaps,eligiblePeriods}=require('./feedback');
 cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});
 const db=cloud.database({throwOnNotFound:false});
 const register=createRegistration(db);
@@ -48,14 +49,17 @@ exports.main=async function(event){
     if(m.status&&m.status!=='active')throw Error('MEMBER_DISABLED');
     const r=await db.collection('activity_signups').doc(signupId(a._id,m._id)).get();
     const s=r.data;
+    output.feedbackStatus=feedbackStatus(a,s);
     output.myStatus=s&&s.status==='applied'?(s.attendance&&s.attendance.status==='checked_in'?'checked_in':'applied'):'none';
    }
   }
   return output;
  }
+ if(event.action==='feedback')return submitFeedback(db,event.id,await me(),event.answers);
+ if(event.action==='recaps')return {recaps:await readRecaps(db,(await me())._id)};
  if(event.action==='mine'){
   const member=await me(),r=await readParticipation(db,member._id);
-  return {applications:r.applications,participated:r.participated,formalAttended:r.formalParticipated.length};
+  return {applications:r.applications,participated:r.participated,formalAttended:r.formalParticipated.length,recapLabels:eligiblePeriods(r.formalParticipated).map(period=>period.label)};
  }
  if(event.action==='apply'||event.action==='cancel')return register(event.action,event.id,await me());
  throw Error('UNSUPPORTED_ACTION');

@@ -1,6 +1,6 @@
 'use strict';
 function stamp(d){if(!d)return '';const ms=new Date(d).getTime();return Number.isFinite(ms)?new Date(ms+28800000).toISOString().slice(0,16).replace('T',' '):'';}
-async function readParticipation(db,memberId){
+async function readParticipation(db,memberId,{includeFeedback=false}={}){
  let cursor='',signups=[];
  while(true){
   const q={memberId:memberId,status:'applied'};if(cursor)q._id=db.command.gt(cursor);
@@ -24,6 +24,7 @@ async function readParticipation(db,memberId){
   const row={activityId:a._id,title:a.title,category:a.category,startDate:a.startDate,startTime:a.startTime,location:a.location,
    registeredAt:stamp(s.createdAt),checkedInAt:checked?stamp(att.checkedInAt):'',
    isTest:a.isTest===true||s.isTest===true||att.isTest===true,attendanceStatus:checked?'checked_in':'not_checked_in'};
+  if(includeFeedback&&checked&&s.feedback)row.feedback=s.feedback;
   (checked?participated:applications).push(row);
  });
  applications.sort((a,b)=>(a.startDate+a.startTime).localeCompare(b.startDate+b.startTime));

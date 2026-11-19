@@ -1,0 +1,17 @@
+<view wx:if="{{loading}}" class="card muted">正在加载活动回顾…</view>
+<view wx:elif="{{error}}" class="card">
+ <view>活动回顾加载失败</view>
+ <button size="mini" bindtap="load">重试</button>
+</view>
+<block wx:else>
+ <view wx:for="{{recaps}}" wx:key="label" wx:for-item="recap" class="card">
+  <view class="heading">{{recap.label}}回顾</view>
+  <view class="muted recap-row">到场 {{recap.activityCount}} 次 · 填写问卷 {{recap.responseCount}} 次</view>
+  <view class="recap-title">你玩过的玩法</view>
+  <view wx:for="{{recap.games}}" wx:key="game" class="recap-row">{{item.game}} · 评价 {{item.count}} 次 · 平均 {{item.average}} 分</view>
+  <view wx:if="{{!recap.games.length}}" class="muted">这段时间还没有玩法评价。</view>
+  <view class="recap-title">精彩手牌 · {{recap.handCount}} 条已认证</view>
+  <view wx:for="{{recap.recentHands}}" wx:key="id" class="recap-row">{{item.date}} · {{item.name}}</view>
+ </view>
+ <view wx:if="{{!recaps.length}}" class="card muted">最近一个已结束的季度或年度内，签到参加至少两次正式活动后，即可查看对应回顾。</view>
+</block>

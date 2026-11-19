@@ -17,4 +17,28 @@
   <button wx:else type="primary" disabled="{{busy}}" loading="{{busy}}" bindtap="apply">立即报名</button>
   <view class="muted" style="margin-top:18rpx;">活动报名不涉及扑克牌局输赢或现金奖励。</view>
  </view>
+ <view wx:if="{{feedbackStatus==='open'||feedbackStatus==='submitted'}}" class="card">
+  <view class="section-title">活动满意度问卷</view>
+  <view wx:if="{{feedbackStatus==='submitted'}}" class="success">✓ 已提交，感谢反馈</view>
+  <block wx:else>
+   <view class="feedback-question">今天玩了哪种游戏？（可多选）</view>
+   <checkbox-group bindchange="chooseGames">
+    <label wx:for="{{games}}" wx:key="name" class="feedback-option">
+     <checkbox value="{{item.name}}" checked="{{item.selected}}" disabled="{{sendingFeedback}}"/>{{item.name}}
+    </label>
+   </checkbox-group>
+   <view class="feedback-question">你对所选玩法的评价如何？</view>
+   <view class="muted">1 分很不满意，5 分很满意。</view>
+   <view wx:for="{{games}}" wx:key="name" wx:for-index="gameIndex">
+    <block wx:if="{{item.selected}}">
+     <view class="feedback-option">{{item.name}}</view>
+     <view class="feedback-ratings">
+      <button wx:for="{{ratings}}" wx:key="*this" wx:for-item="score" size="mini" disabled="{{sendingFeedback}}" class="{{item.rating===score?'chosen':''}}" data-game="{{gameIndex}}" data-rating="{{score}}" bindtap="rateGame">{{score}}</button>
+     </view>
+    </block>
+   </view>
+   <view class="muted feedback-option">评价会用于生成你的个人活动回顾。</view>
+   <button type="primary" bindtap="submitFeedback" loading="{{sendingFeedback}}" disabled="{{sendingFeedback}}">提交评价</button>
+  </block>
+ </view>
 </block>

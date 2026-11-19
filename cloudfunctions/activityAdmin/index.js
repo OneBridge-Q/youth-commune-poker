@@ -5,7 +5,7 @@ cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});
 const db=cloud.database();
 const CATEGORIES=new Set(['社交交流','知识分享','户外运动','创业共创','其他']);
 const plain=(s,max)=>typeof s==='string'&&s.trim().length>0&&s.trim().length<=max;
-function summary(r){return {id:r._id,title:r.title,category:r.category,description:r.description||'',location:r.location,startDate:r.startDate,startTime:r.startTime,status:r.status,posterFileID:r.posterFileID||'',storeId:r.storeId,isTest:r.isTest===true,createdAt:r.createdAt};}
+function summary(r){return {id:r._id,title:r.title,category:r.category,description:r.description||'',location:r.location,startDate:r.startDate,startTime:r.startTime,status:r.status,feedbackOpen:!!r.feedbackOpenedAt,posterFileID:r.posterFileID||'',storeId:r.storeId,isTest:r.isTest===true,createdAt:r.createdAt};}
 async function getEvent(id){if(!plain(id,128))throw Error('INVALID_ID');const r=await db.collection('activities').where({_id:id}).limit(1).get();if(!r.data.length)throw Error('EVENT_NOT_FOUND');return r.data[0];}
 exports.main=async function(event){
  event=event||{};
@@ -27,6 +27,18 @@ exports.main=async function(event){
   if(Number.isNaN(startsAt.getTime())||startsAt.getTime()<Date.now()+600000||new Date(startsAt.getTime()+28800000).toISOString().slice(0,10)!==startDate)throw Error('INVALID_DATE');
   const r=await db.collection('activities').add({data:{title:title.trim(),category,description:description.trim(),location:location.trim(),startDate,startTime,startsAt,posterFileID,isTest,status:'draft',storeId:actor.storeId,createdBy:actor._id,createdAt:db.serverDate(),updatedAt:db.serverDate()}});
   return {id:r._id,status:'draft'};
+ }
+ if(action==='openFeedback'){
+  const item=await getEvent(event.id);
+  if(actor.role!=='superadmin'&&item.storeId!==actor.storeId)throw Error('WRONG_STORE');
+  const startsAt=new Date(item.startsAt||item.startDate+'T'+item.startTime+':00+08:00').getTime();
+  if(item.status!=='published'||!Number.isFinite(startsAt)||startsAt>Date.now())throw Error('INVALID_TRANSITION');
+  if(item.feedbackOpenedAt)return {feedbackOpen:true};
+  const result=await db.collection('activities').where({_id:item._id,status:'published'}).update({
+   data:{feedbackOpenedAt:db.serverDate(),feedbackOpenedBy:actor._id}
+  });
+  if(!result.stats.updated)throw Error('CONCURRENT_UPDATE');
+  return {feedbackOpen:true};
  }
  if(action==='publish'||action==='cancel'||action==='markTest'){
   const item=await getEvent(event.id);
