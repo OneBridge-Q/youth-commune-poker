@@ -16,7 +16,18 @@ exports.main=async function(event){
  const action=event.action;
  if(action==='list'){
   const a=await db.collection('activities').where(actor.role==='superadmin'?{}:{storeId:actor.storeId}).limit(100).get();
-  return {activities:a.data.map(summary).sort((a,b)=>(b.startDate+b.startTime).localeCompare(a.startDate+a.startTime))};
+  const rows=a.data.map(summary).sort((a,b)=>(b.startDate+b.startTime).localeCompare(a.startDate+a.startTime));
+  for(let i=0;i<rows.length;i+=5){
+   await Promise.all(rows.slice(i,i+5).map(async item=>{
+    const base={activityId:item.id,status:'applied'};
+    const [registered,checkedIn]=await Promise.all([
+     db.collection('activity_signups').where(base).count(),
+     db.collection('activity_signups').where({...base,'attendance.status':'checked_in'}).count()
+    ]);
+    item.registered=registered.total;item.checkedIn=checkedIn.total;
+   }));
+  }
+  return {activities:rows};
  }
  if(action==='create'){
   const {title,category='其他',description='',location,startDate,startTime,posterFileID='',isTest=false}=event;

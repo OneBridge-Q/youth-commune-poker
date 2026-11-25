@@ -1,7 +1,7 @@
 Page({
- data:{title:'',description:'',location:'',date:'',time:'19:30',categories:['主题社交','德州活动','知识分享','户外运动','创业共创','其他'],categoryIndex:0,activities:[],loading:false,busy:false,error:'',posterLocalPath:'',posterExt:'jpg',isTest:false},
- onLoad:function(){this.setData({date:new Date(Date.now()+86400000+28800000).toISOString().slice(0,10)});},
- onShow:function(){this.load();},
+ data:{mode:'manage',title:'',description:'',location:'',date:'',time:'19:30',categories:['主题社交','德州活动','知识分享','户外运动','创业共创','其他'],categoryIndex:0,activities:[],loading:false,busy:false,error:'',posterLocalPath:'',posterExt:'jpg',isTest:false},
+ onLoad:function(o){var mode=o&&o.mode==='create'?'create':'manage';wx.setNavigationBarTitle({title:mode==='create'?'创建活动':'活动管理'});this.setData({mode:mode,date:new Date(Date.now()+86400000+28800000).toISOString().slice(0,10)});},
+ onShow:function(){if(this.data.mode==='manage')this.load();},
  onTitle:function(e){this.setData({title:e.detail.value});},onDescription:function(e){this.setData({description:e.detail.value});},onLocation:function(e){this.setData({location:e.detail.value});},onDate:function(e){this.setData({date:e.detail.value});},onTime:function(e){this.setData({time:e.detail.value});},onCategory:function(e){this.setData({categoryIndex:Number(e.detail.value)});},onTest:function(e){this.setData({isTest:!!e.detail.value});},
  choosePoster:function(){
   var page=this;if(page.data.busy)return;
@@ -13,7 +13,7 @@ Page({
  },
  removePoster:function(){if(!this.data.busy)this.setData({posterLocalPath:''});},
  load:function(){var page=this;page.setData({loading:true,error:''});
-  wx.cloud.callFunction({name:'activityAdmin',data:{action:'list'}}).then(function(r){page.setData({activities:(r.result&&r.result.activities)||[],loading:false});}).catch(function(e){console.error('[admin:activities:list]',e);page.setData({loading:false,error:'无法加载活动，请检查管理员权限及云函数部署'});});
+  wx.cloud.callFunction({name:'activityAdmin',data:{action:'list'}}).then(function(r){page.setData({activities:((r.result&&r.result.activities)||[]).map(function(a){var known=typeof a.registered==='number'&&typeof a.checkedIn==='number';return Object.assign({},a,{registered:known?a.registered:'—',checkedIn:known?a.checkedIn:'—',attendanceRate:known?(a.registered?Math.round(a.checkedIn/a.registered*100)+'%':'—'):'—'});}),loading:false});}).catch(function(e){console.error('[admin:activities:list]',e);page.setData({loading:false,error:'无法加载活动，请检查管理员权限及云函数部署'});});
  },
  create:function(){
   var page=this;if(page.data.busy)return;
@@ -21,7 +21,7 @@ Page({
   var request={action:'create',title:page.data.title.trim(),description:page.data.description.trim(),location:page.data.location.trim(),startDate:page.data.date,startTime:page.data.time,category:page.data.categories[page.data.categoryIndex],posterFileID:'',isTest:page.data.isTest};
   page.setData({busy:true});var upload=Promise.resolve();
   if(page.data.posterLocalPath)upload=wx.cloud.uploadFile({cloudPath:'activity-posters/cover_'+Date.now()+'_'+Math.random().toString(36).slice(2,12)+'.'+page.data.posterExt,filePath:page.data.posterLocalPath}).then(function(r){if(!r.fileID)throw Error('POSTER_UPLOAD_FAILED');request.posterFileID=r.fileID;});
-  upload.then(function(){return wx.cloud.callFunction({name:'activityAdmin',data:request});}).then(function(r){if(!r.result||!r.result.id)throw Error('CREATE_FAILED');wx.showToast({title:'草稿已创建'});page.setData({title:'',description:'',location:'',posterLocalPath:'',isTest:false});page.load();}).catch(function(e){console.error('[admin:activities:create]',e);wx.showModal({title:'创建失败',content:'请检查活动日期、图片上传、云函数与数据库。',showCancel:false});}).then(function(){page.setData({busy:false});});
+  upload.then(function(){return wx.cloud.callFunction({name:'activityAdmin',data:request});}).then(function(r){if(!r.result||!r.result.id)throw Error('CREATE_FAILED');page.setData({title:'',description:'',location:'',posterLocalPath:'',isTest:false});wx.showModal({title:'草稿已创建',content:'前往活动管理发布草稿？',confirmText:'去管理',cancelText:'继续创建',success:function(v){if(v.confirm)wx.redirectTo({url:'/pages/admin-activities/index?mode=manage'});}});}).catch(function(e){console.error('[admin:activities:create]',e);wx.showModal({title:'创建失败',content:'请检查活动日期、图片上传、云函数与数据库。',showCancel:false});}).then(function(){page.setData({busy:false});});
  },
  act:function(e){
   var page=this,action=e.currentTarget.dataset.action,id=e.currentTarget.dataset.id;if(page.data.busy)return;
@@ -30,5 +30,5 @@ Page({
    wx.cloud.callFunction({name:'activityAdmin',data:{action:action,id:id}}).then(function(){wx.showToast({title:'操作成功'});page.load();}).catch(function(err){console.error('[admin:activities]',err);wx.showToast({title:'操作失败',icon:'none'});}).then(function(){page.setData({busy:false});});
   }});
  },
- viewSignups:function(e){if(e.currentTarget.dataset.id)wx.navigateTo({url:'/pages/admin-attendance/index?id='+encodeURIComponent(e.currentTarget.dataset.id)});}
+ viewSignups:function(e){if(e.currentTarget.dataset.id)wx.navigateTo({url:'/pages/admin-attendance/index?id='+encodeURIComponent(e.currentTarget.dataset.id)+'&filter='+encodeURIComponent(e.currentTarget.dataset.filter||'all')});}
 });

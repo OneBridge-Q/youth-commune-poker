@@ -7,7 +7,7 @@ function hint(e){
 }
 Page({
  data:{id:'',activity:null,stats:{registered:0,checkedIn:0,notCheckedIn:0},rows:[],keyword:'',filter:'all',nextOffset:null,loading:false,busy:false,error:'',canCheckIn:false,revokeTarget:null,reason:''},
- onLoad:function(o){this.setData({id:o.id||''});},
+ onLoad:function(o){this.setData({id:o.id||'',filter:['all','checked_in','not_checked_in'].indexOf(o.filter)>=0?o.filter:'all'});},
  onShow:function(){if(this.data.id)this.load(false);},
  onHide:function(){this._seq=(this._seq||0)+1;},
  onUnload:function(){this._seq=(this._seq||0)+1;},

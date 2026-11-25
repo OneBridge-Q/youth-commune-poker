@@ -12,7 +12,7 @@
   <view wx:if="{{memberLoading}}" class="welcome-note">正在打开你的红圈空间…</view>
   <view wx:elif="{{memberError}}" class="welcome-row" bindtap="loadHome"><view class="welcome-note">{{memberError}}</view><text class="welcome-action">重试 ›</text></view>
   <view wx:elif="{{registered}}" class="welcome-row" bindtap="goMine"><view class="welcome-copy"><view class="welcome-name">{{nickname}}，欢迎回来</view><view class="welcome-note">看看今天，有哪些值得参与的相遇。</view></view><text class="welcome-action">我的空间 ↗</text></view>
-  <view wx:else class="welcome-row" bindtap="goRegister"><view class="welcome-copy"><view class="welcome-name">下一次相遇，从你开始</view><view class="welcome-note">加入红圈，记录属于自己的成长。</view></view><text class="welcome-action">加入红圈 ↗</text></view>
+  <view wx:else class="welcome-row" bindtap="goRegister"><view class="welcome-copy"><view class="welcome-name">下一次相遇，从你开始</view><view class="welcome-note">加入红圈，记录属于自己的成长。</view></view><button class="join-button" catchtap="goRegister">立即加入 ›</button></view>
  </view>
  <view class="section-head"><view><view class="eyebrow">FIND YOUR CIRCLE</view><view class="section-title">找到你的兴趣圈</view></view></view>
  <view class="section-note">先认识活动类型，再选择适合你的具体场次。</view>

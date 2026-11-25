@@ -1,6 +1,6 @@
 function displayScore(value){return typeof value==='number'&&isFinite(value)?String(value):'0';}
 Page({
- data:{loading:true,error:'',registered:false,nickname:'',avatarSrc:'',initial:'圈',skillDisplay:'—',charmDisplay:'—',isAdmin:false,adminExpanded:false,champions:[],championPreview:[],recapLabels:[],myActivities:[],activityPreview:[],showAllActivities:false,showAllChampions:false,activitiesLoading:false,activitiesError:'',championsLoading:false,championsError:''},
+ data:{loading:true,error:'',registered:false,nickname:'',avatarSrc:'',initial:'圈',skillDisplay:'—',charmDisplay:'—',isAdmin:false,adminExpanded:true,champions:[],championPreview:[],recapLabels:[],myActivities:[],activityPreview:[],showAllActivities:false,showAllChampions:false,activitiesLoading:false,activitiesError:'',championsLoading:false,championsError:''},
  onLoad:function(){wx.setNavigationBarTitle({title:'我的 · 红圈 club'});},
  onShow:function(){this.loadProfile();},
  onHide:function(){this._seq=(this._seq||0)+1;},
@@ -52,6 +52,7 @@ Page({
  openChampion:function(e){if(e.currentTarget.dataset.id)wx.navigateTo({url:'/pages/moment/index?type=champion&id='+encodeURIComponent(e.currentTarget.dataset.id)});},
  openAdmin:function(){wx.navigateTo({url:'/pages/admin-highlights/index'});},
  openChampionAdmin:function(){wx.navigateTo({url:'/pages/admin-champions/index'});},
- openActivityAdmin:function(){wx.navigateTo({url:'/pages/admin-activities/index'});},
+ openActivityAdmin:function(){wx.navigateTo({url:'/pages/admin-activities/index?mode=manage'});},
+ openActivityCreate:function(){wx.navigateTo({url:'/pages/admin-activities/index?mode=create'});},
  openRecapAdmin:function(){wx.navigateTo({url:'/pages/admin-recaps/index'});}
 });
