@@ -30,7 +30,7 @@ function database(source){
  return {collection,command:{gt:v=>op('gt',v),in:v=>op('in',v),neq:v=>op('neq',v),exists:v=>op('exists',v),inc:v=>op('inc',v)},serverDate:()=>new Date(clock)};
 }
 function reset(){
- clock=TIME;ctx={OPENID:'admin-wx',APPID:'wx38e120d7481c3436'};failAudit=false;chain=Promise.resolve();
+ clock=TIME;ctx={OPENID:'admin-wx',APPID:'wxf108b994bb81e185'};failAudit=false;chain=Promise.resolve();
  tables={members:[{_id:'admin',_openid:'admin-wx',nickname:'管理员',role:'admin',storeId:'store-001',status:'active',skillPoints:5,rewardPoints:9},{_id:'a',_openid:'a-wx',nickname:'会员甲',storeId:'store-001',status:'active',skillPoints:8,rewardPoints:30},{_id:'b',_openid:'b-wx',nickname:'会员乙',storeId:'store-002',status:'active',skillPoints:3,rewardPoints:6}],member_identities:[],activities:[{_id:'event',title:'分享会',category:'知识分享',storeId:'store-001',status:'published',isTest:false,startDate:'2026-11-16',startTime:'13:00',startsAt:new Date('2026-11-16T13:00:00+08:00'),location:'店内'}],activity_signups:[],attendance_audit:[],hand_records:[],champion_awards:[]};
  for(const m of ['a','b'])tables.activity_signups.push({_id:signupId('event',m),activityId:'event',memberId:m,nickname:m==='a'?'会员甲':'会员乙',status:'applied',createdAt:new Date(clock-86400000)});
  db=database(()=>tables);
