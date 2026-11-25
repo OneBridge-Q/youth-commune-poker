@@ -1,5 +1,5 @@
 Page({
- data:{title:'',description:'',location:'',date:'',time:'19:30',categories:['社交交流','知识分享','户外运动','创业共创','其他'],categoryIndex:0,activities:[],loading:false,busy:false,error:'',posterLocalPath:'',posterExt:'jpg',isTest:false},
+ data:{title:'',description:'',location:'',date:'',time:'19:30',categories:['社交交流','德州活动','知识分享','户外运动','创业共创','其他'],categoryIndex:0,activities:[],loading:false,busy:false,error:'',posterLocalPath:'',posterExt:'jpg',isTest:false},
  onLoad:function(){this.setData({date:new Date(Date.now()+86400000+28800000).toISOString().slice(0,10)});},
  onShow:function(){this.load();},
  onTitle:function(e){this.setData({title:e.detail.value});},onDescription:function(e){this.setData({description:e.detail.value});},onLocation:function(e){this.setData({location:e.detail.value});},onDate:function(e){this.setData({date:e.detail.value});},onTime:function(e){this.setData({time:e.detail.value});},onCategory:function(e){this.setData({categoryIndex:Number(e.detail.value)});},onTest:function(e){this.setData({isTest:!!e.detail.value});},
