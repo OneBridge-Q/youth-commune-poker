@@ -4,8 +4,9 @@ const cloud=require('wx-server-sdk');
 cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});
 const db=cloud.database();
 const CATEGORIES=new Set(['主题社交','社交交流','德州活动','知识分享','户外运动','创业共创','其他']);
+const PRODUCT_CATEGORY={"poker":"德州活动","outdoor":"户外运动","hardware":"知识分享","psychology":"知识分享","pitch":"创业共创","mvp":"创业共创"};
 const plain=(s,max)=>typeof s==='string'&&s.trim().length>0&&s.trim().length<=max;
-function summary(r){return {id:r._id,title:r.title,category:r.category==='社交交流'?'主题社交':r.category,description:r.description||'',location:r.location,startDate:r.startDate,startTime:r.startTime,status:r.status,feedbackOpen:!!r.feedbackOpenedAt,posterFileID:r.posterFileID||'',storeId:r.storeId,isTest:r.isTest===true,createdAt:r.createdAt};}
+function summary(r){return {id:r._id,title:r.title,productId:r.productId||'',category:r.category==='社交交流'?'主题社交':r.category,description:r.description||'',location:r.location,startDate:r.startDate,startTime:r.startTime,status:r.status,feedbackOpen:!!r.feedbackOpenedAt,posterFileID:r.posterFileID||'',storeId:r.storeId,isTest:r.isTest===true,createdAt:r.createdAt};}
 async function getEvent(id){if(!plain(id,128))throw Error('INVALID_ID');const r=await db.collection('activities').where({_id:id}).limit(1).get();if(!r.data.length)throw Error('EVENT_NOT_FOUND');return r.data[0];}
 exports.main=async function(event){
  event=event||{};
@@ -30,13 +31,14 @@ exports.main=async function(event){
   return {activities:rows};
  }
  if(action==='create'){
-  const {title,category='其他',description='',location,startDate,startTime,posterFileID='',isTest=false}=event;
+  const {title,category='其他',description='',location,startDate,startTime,posterFileID='',isTest=false,productId=''}=event;
+  if(typeof productId!=='string'||(productId&&(!Object.prototype.hasOwnProperty.call(PRODUCT_CATEGORY,productId)||PRODUCT_CATEGORY[productId]!==category)))throw Error('INVALID_PRODUCT');
   if(typeof posterFileID!=='string'||(posterFileID&&!/^cloud:\/\/[a-zA-Z0-9._-]+\/activity-posters\/[a-zA-Z0-9._-]+\.(jpg|jpeg|png|webp)$/i.test(posterFileID)))throw Error('INVALID_POSTER');
   if(!plain(title,60)||!CATEGORIES.has(category)||typeof description!=='string'||description.length>500||!plain(location,120)||typeof isTest!=='boolean')throw Error('INVALID_INPUT');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(startDate||'')||!/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime||''))throw Error('INVALID_DATE');
   const startsAt=new Date(startDate+'T'+startTime+':00+08:00');
   if(Number.isNaN(startsAt.getTime())||startsAt.getTime()<Date.now()+600000||new Date(startsAt.getTime()+28800000).toISOString().slice(0,10)!==startDate)throw Error('INVALID_DATE');
-  const r=await db.collection('activities').add({data:{title:title.trim(),category:category==='社交交流'?'主题社交':category,description:description.trim(),location:location.trim(),startDate,startTime,startsAt,posterFileID,isTest,status:'draft',storeId:actor.storeId,createdBy:actor._id,createdAt:db.serverDate(),updatedAt:db.serverDate()}});
+  const r=await db.collection('activities').add({data:{title:title.trim(),category:category==='社交交流'?'主题社交':category,description:description.trim(),location:location.trim(),startDate,startTime,startsAt,posterFileID,isTest,productId,status:'draft',storeId:actor.storeId,createdBy:actor._id,createdAt:db.serverDate(),updatedAt:db.serverDate()}});
   return {id:r._id,status:'draft'};
  }
  if(action==='openFeedback'){

@@ -8,7 +8,7 @@ cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});
 const db=cloud.database({throwOnNotFound:false});
 const register=createRegistration(db);
 const valid=s=>typeof s==='string'&&s.length>0&&s.length<=128;
-const view=x=>({id:x._id,title:x.title,category:x.category==='社交交流'?'主题社交':x.category,description:x.description||'',location:x.location,startDate:x.startDate,startTime:x.startTime,posterFileID:x.posterFileID||'',status:x.status,isTest:x.isTest===true});
+const view=x=>({id:x._id,title:x.title,productId:x.productId||'',category:x.category==='社交交流'?'主题社交':x.category,description:x.description||'',location:x.location,startDate:x.startDate,startTime:x.startTime,posterFileID:x.posterFileID||'',status:x.status,isTest:x.isTest===true});
 async function attachPosters(activities){
  const rows=activities.map(view);
  const ids=Array.from(new Set(rows.map(x=>x.posterFileID).filter(x=>typeof x==='string'&&/^cloud:\/\/[a-zA-Z0-9._-]+\/activity-posters\//.test(x))));

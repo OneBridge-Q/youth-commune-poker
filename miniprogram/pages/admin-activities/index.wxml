@@ -3,6 +3,7 @@
 <view class="card">
  <view class="label">活动名称</view><input disabled="{{busy}}" value="{{title}}" bindinput="onTitle" maxlength="60" placeholder="例如：硬件产品分享会"/>
  <view class="label">活动分类</view><picker disabled="{{busy}}" mode="selector" range="{{categories}}" value="{{categoryIndex}}" bindchange="onCategory"><view class="pick">{{categories[categoryIndex]}} ▼</view></picker>
+ <block wx:if="{{themeOptions.length>1}}"><view class="label">首页活动主题</view><picker disabled="{{busy}}" range="{{themeOptions}}" range-key="name" value="{{themeIndex}}" bindchange="onTheme"><view class="pick">{{themeOptions[themeIndex].name}} ▼</view></picker><view class="muted">指定主题后，活动将准确展示在首页对应模块。</view></block>
  <view class="label">日期与时间</view><view class="row"><picker disabled="{{busy}}" mode="date" value="{{date}}" bindchange="onDate"><view class="pick">{{date}} ▼</view></picker><picker disabled="{{busy}}" mode="time" value="{{time}}" bindchange="onTime"><view class="pick">{{time}} ▼</view></picker></view>
  <view class="label">活动地点</view><input disabled="{{busy}}" value="{{location}}" bindinput="onLocation" maxlength="120" placeholder="输入具体场地信息"/>
  <view class="label">活动介绍</view><textarea disabled="{{busy}}" value="{{description}}" bindinput="onDescription" maxlength="500" placeholder="活动内容、适合人群、注意事项"/>
