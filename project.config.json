@@ -2,7 +2,7 @@
   "miniprogramRoot": "miniprogram/",
   "cloudfunctionRoot": "cloudfunctions/",
   "projectname": "youth-commune-poker",
-  "appid": "wx38e120d7481c3436",
+  "appid": "wxf108b994bb81e185",
   "setting": {
     "es6": true,
     "minified": true
