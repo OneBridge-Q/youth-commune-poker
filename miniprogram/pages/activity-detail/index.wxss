@@ -6,3 +6,5 @@
 .feedback-ratings { display: flex; gap: 8rpx; }
 .feedback-ratings button { flex: 1; padding: 0; }
 .feedback-ratings .chosen { background: #202b3c; color: #fff; }
+
+.share-actions{display:flex;gap:16rpx;margin-top:24rpx}.share-actions button{flex:1;margin:0;padding:0 12rpx;font-size:27rpx;line-height:82rpx;border-radius:18rpx}.share-primary{background:#C53236;color:#fff}.share-secondary{background:#F5ECE8;color:#A33532}.share-actions button::after{border:0}
