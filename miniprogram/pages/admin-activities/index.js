@@ -1,10 +1,11 @@
 var club=require('../../utils/club-home');
 function themes(category){return [{id:'',name:'不指定主题'}].concat(club.products.filter(function(p){return p.category===category;}));}
 Page({
- data:{mode:'manage',title:'',description:'',location:'',date:'',time:'19:30',categories:['主题社交','德州活动','知识分享','户外运动','创业共创','其他'],categoryIndex:0,themeOptions:themes('主题社交'),themeIndex:0,activities:[],loading:false,busy:false,error:'',posterLocalPath:'',posterExt:'jpg',isTest:false},
+ data:{feeEnabled:false,feeInput:'',capacityInput:'',mode:'manage',title:'',description:'',location:'',date:'',time:'19:30',categories:['主题社交','德州活动','知识分享','户外运动','创业共创','其他'],categoryIndex:0,themeOptions:themes('主题社交'),themeIndex:0,activities:[],loading:false,busy:false,error:'',posterLocalPath:'',posterExt:'jpg',isTest:false},
  onLoad:function(o){var mode=o&&o.mode==='create'?'create':'manage';wx.setNavigationBarTitle({title:mode==='create'?'创建活动':'活动管理'});this.setData({mode:mode,date:new Date(Date.now()+86400000+28800000).toISOString().slice(0,10)});},
  onShow:function(){if(this.data.mode==='manage')this.load();},
  onTitle:function(e){this.setData({title:e.detail.value});},onDescription:function(e){this.setData({description:e.detail.value});},onLocation:function(e){this.setData({location:e.detail.value});},onDate:function(e){this.setData({date:e.detail.value});},onTime:function(e){this.setData({time:e.detail.value});},onCategory:function(e){var i=Number(e.detail.value),opts=themes(this.data.categories[i]);this.setData({categoryIndex:i,themeOptions:opts,themeIndex:opts.length===2?1:0});},onTheme:function(e){this.setData({themeIndex:Number(e.detail.value)});},onTest:function(e){this.setData({isTest:!!e.detail.value});},
+ onFeeEnabled:function(e){this.setData({feeEnabled:!!e.detail.value});},onFee:function(e){this.setData({feeInput:e.detail.value});},onCapacity:function(e){this.setData({capacityInput:e.detail.value});},
  choosePoster:function(){
   var page=this;if(page.data.busy)return;
   wx.chooseMedia({count:1,mediaType:['image'],sourceType:['album','camera'],sizeType:['compressed'],success:function(res){
@@ -20,10 +21,12 @@ Page({
  create:function(){
   var page=this;if(page.data.busy)return;
   if(!page.data.title.trim()||!page.data.location.trim()||!page.data.date)return wx.showToast({title:'请填写活动名称、日期和地点',icon:'none'});
-  var request={action:'create',title:page.data.title.trim(),description:page.data.description.trim(),location:page.data.location.trim(),startDate:page.data.date,startTime:page.data.time,category:page.data.categories[page.data.categoryIndex],productId:page.data.themeOptions[page.data.themeIndex].id,posterFileID:'',isTest:page.data.isTest};
+  var fee=page.data.feeEnabled?String(page.data.feeInput).trim():'0',cap=String(page.data.capacityInput).trim()||'0';
+  if(!/^\d{1,5}(\.\d{1,2})?$/.test(fee)||Number(fee)>10000||(page.data.feeEnabled&&Number(fee)<=0)||!/^\d{1,4}$/.test(cap)||Number(cap)>1000)return wx.showToast({title:'请填写有效报名费用及人数',icon:'none'});
+  var request={feeFen:Math.round(Number(fee)*100),capacity:Number(cap),action:'create',title:page.data.title.trim(),description:page.data.description.trim(),location:page.data.location.trim(),startDate:page.data.date,startTime:page.data.time,category:page.data.categories[page.data.categoryIndex],productId:page.data.themeOptions[page.data.themeIndex].id,posterFileID:'',isTest:page.data.isTest};
   page.setData({busy:true});var upload=Promise.resolve();
   if(page.data.posterLocalPath)upload=wx.cloud.uploadFile({cloudPath:'activity-posters/cover_'+Date.now()+'_'+Math.random().toString(36).slice(2,12)+'.'+page.data.posterExt,filePath:page.data.posterLocalPath}).then(function(r){if(!r.fileID)throw Error('POSTER_UPLOAD_FAILED');request.posterFileID=r.fileID;});
-  upload.then(function(){return wx.cloud.callFunction({name:'activityAdmin',data:request});}).then(function(r){if(!r.result||!r.result.id)throw Error('CREATE_FAILED');page.setData({title:'',description:'',location:'',posterLocalPath:'',isTest:false});wx.showModal({title:'草稿已创建',content:'前往活动管理发布草稿？',confirmText:'去管理',cancelText:'继续创建',success:function(v){if(v.confirm)wx.redirectTo({url:'/pages/admin-activities/index?mode=manage'});}});}).catch(function(e){console.error('[admin:activities:create]',e);wx.showModal({title:'创建失败',content:'请检查活动日期、图片上传、云函数与数据库。',showCancel:false});}).then(function(){page.setData({busy:false});});
+  upload.then(function(){return wx.cloud.callFunction({name:'activityAdmin',data:request});}).then(function(r){if(!r.result||!r.result.id)throw Error('CREATE_FAILED');page.setData({title:'',description:'',location:'',posterLocalPath:'',isTest:false,feeEnabled:false,feeInput:'',capacityInput:''});wx.showModal({title:'草稿已创建',content:'前往活动管理发布草稿？',confirmText:'去管理',cancelText:'继续创建',success:function(v){if(v.confirm)wx.redirectTo({url:'/pages/admin-activities/index?mode=manage'});}});}).catch(function(e){console.error('[admin:activities:create]',e);wx.showModal({title:'创建失败',content:'请检查活动日期、图片上传、云函数与数据库。',showCancel:false});}).then(function(){page.setData({busy:false});});
  },
  act:function(e){
   var page=this,action=e.currentTarget.dataset.action,id=e.currentTarget.dataset.id;if(page.data.busy)return;

@@ -22,7 +22,7 @@
  <view wx:if="{{eventsLoading}}" class="empty-panel">正在寻找下一场相遇…</view>
  <view wx:elif="{{eventsError}}" class="empty-panel"><text>{{eventsError}}</text><button size="mini" bindtap="loadHome">重试</button></view>
  <view wx:elif="{{!events.length}}" class="empty-panel">下一场活动正在筹备中，发布后会出现在这里。</view>
- <view wx:for="{{events}}" wx:key="id" class="event-card" data-id="{{item.id}}" bindtap="openActivity"><image wx:if="{{item.posterSrc}}" src="{{item.posterSrc}}" mode="aspectFill" class="event-cover" data-index="{{index}}" binderror="onCoverError"/><view class="event-content"><view class="product-tag">{{item.category}}</view><view class="event-title">{{item.title}}</view><view class="event-meta">{{item.startDate}} · {{item.startTime}}</view><view class="event-meta">{{item.location}}</view><view class="product-action">查看详情与报名 ↗</view></view></view>
+ <view wx:for="{{events}}" wx:key="id" class="event-card" data-id="{{item.id}}" bindtap="openActivity"><image wx:if="{{item.posterSrc}}" src="{{item.posterSrc}}" mode="aspectFill" class="event-cover" data-index="{{index}}" binderror="onCoverError"/><view class="event-content"><view class="product-tag">{{item.category}} · {{item.feeLabel||'免费'}}</view><view class="event-title">{{item.title}}</view><view class="event-meta">{{item.startDate}} · {{item.startTime}}</view><view class="event-meta">{{item.location}}</view><view class="product-action">查看详情与报名 ↗</view></view></view>
  <view class="section-head"><view><view class="eyebrow">MOMENTS WE SHARE</view><view class="section-title">往期精彩回顾</view></view></view>
  <view class="section-note">把真实发生的相遇、交流与共创留下来。</view>
  <view wx:if="{{recapsLoading}}" class="empty-panel">正在加载活动回顾…</view>

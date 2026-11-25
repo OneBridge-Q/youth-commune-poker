@@ -11,9 +11,9 @@ Page({
    if(seq!==page._seq)return;var v=r.result||{};page.setData({activity:v.activity||null,myStatus:v.myStatus||'none',feedbackStatus:v.feedbackStatus||'closed',loading:false});
   }).catch(function(){if(seq===page._seq)page.setData({loading:false,error:'活动已下架或暂时无法加载'});});
  },
- apply:function(){var page=this;if(page.data.busy)return;page.setData({busy:true});
-  wx.cloud.callFunction({name:'activityMember',data:{action:'apply',id:page.data.id}}).then(function(){wx.showToast({title:'报名成功'});page.load();}).catch(function(e){
-   var text=String(e.errMsg||e.message||'');wx.showModal({title:'报名失败',content:text.indexOf('REGISTER_REQUIRED')>=0?'请先完成会员注册':text.indexOf('ACTIVITY_ENDED')>=0?'活动已开始，不能再报名':'暂时无法报名，请联系组织者或重试',showCancel:false});
+ apply:function(){var page=this;if(page.data.busy||!page.data.activity)return;if(page.data.activity.feeFen>0)return wx.showToast({title:'支付尚未开通',icon:'none'});page.setData({busy:true});
+  wx.cloud.callFunction({name:'activityMember',data:{action:'apply',id:page.data.id}}).then(function(r){if(!r.result||r.result.status!=='applied')throw Error('SIGNUP_NOT_CONFIRMED');wx.showToast({title:'报名成功'});page.load();}).catch(function(e){
+   var text=String(e.errMsg||e.message||'');wx.showModal({title:'报名失败',content:text.indexOf('REGISTER_REQUIRED')>=0?'请先完成会员注册':text.indexOf('ACTIVITY_FULL')>=0?'报名人数已满':text.indexOf('PAYMENT_NOT_AVAILABLE')>=0?'微信支付尚未开通':text.indexOf('ACTIVITY_ENDED')>=0?'活动已开始，不能再报名':'暂时无法报名，请联系组织者或重试',showCancel:false});
   }).then(function(){page.setData({busy:false});});
  },
  cancel:function(){var page=this;if(page.data.busy)return;

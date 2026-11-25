@@ -3,10 +3,11 @@
 <block wx:if="{{activity}}">
  <view class="card">
   <image wx:if="{{activity.posterSrc}}" src="{{activity.posterSrc}}" mode="widthFix" class="detail-poster"/>
-  <view class="muted">{{activity.category}} · 青年公社</view>
+  <view class="muted">{{activity.category}} · 红圈</view>
   <view class="heading" style="margin-top:18rpx;">{{activity.title}}</view>
   <view class="info">🗓 {{activity.startDate}} {{activity.startTime}}</view>
   <view class="info">📍 {{activity.location}}</view>
+  <view class="info">报名费用：{{activity.feeLabel||'免费'}}</view><view wx:if="{{activity.capacity}}" class="info">限额 {{activity.capacity}} 人 · 剩余 {{activity.remaining}} 人</view>
   <view wx:if="{{activity.isTest}}" style="color:#a16d2a;margin-top:20rpx;">测试活动：报名与签到仅用于联调，不计正式成长。</view>
  </view>
  <view class="card"><view class="section-title">关于这次活动</view><view class="desc">{{activity.description||'与志同道合的朋友相聚，交流与成长。'}}</view></view>
@@ -14,6 +15,8 @@
   <block wx:if="{{myStatus==='checked_in'}}"><view class="success">✓ 已确认到场</view><view class="muted">如为误签，请联系管理员撤销。签到不会自动发放战力值或魅力值。</view></block>
   <block wx:elif="{{myStatus==='applied'}}"><view class="success">✓ 你已报名 · 待签到</view><button disabled="{{busy}}" bindtap="cancel">取消报名</button></block>
   <button wx:elif="{{myStatus==='not_registered'}}" type="primary" bindtap="register">先注册成为会员</button>
+  <block wx:elif="{{activity.feeFen>0}}"><button disabled="true">支付尚未开通</button><view class="muted">暂无法完成付费报名，请关注后续开放通知。</view></block>
+  <button wx:elif="{{activity.capacity>0 && activity.remaining===0}}" disabled="true">报名已满</button>
   <button wx:else type="primary" disabled="{{busy}}" loading="{{busy}}" bindtap="apply">立即报名</button>
   <view class="muted" style="margin-top:18rpx;">活动报名不涉及扑克牌局输赢或现金奖励。</view>
  </view>
