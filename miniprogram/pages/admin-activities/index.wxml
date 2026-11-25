@@ -1,4 +1,4 @@
-<view class="card"><view class="heading">发布一场青年公社活动</view><view class="muted">先创建草稿，确认信息后再发布。</view></view>
+<view class="card"><view class="heading">发布一场红圈活动</view><view class="muted">先创建草稿，确认信息后再发布。</view></view>
 <view class="card">
  <view class="label">活动名称</view><input disabled="{{busy}}" value="{{title}}" bindinput="onTitle" maxlength="60" placeholder="例如：硬件产品分享会"/>
  <view class="label">活动分类</view><picker disabled="{{busy}}" mode="selector" range="{{categories}}" value="{{categoryIndex}}" bindchange="onCategory"><view class="pick">{{categories[categoryIndex]}} ▼</view></picker>
