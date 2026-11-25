@@ -1,6 +1,6 @@
 var club=require('../../utils/club-home');
 Page({
- data:{activities:[],loading:false,error:'',categories:['全部','社交交流','知识分享','户外运动','创业共创','其他'],selected:'全部',visible:[],product:null},
+ data:{activities:[],loading:false,error:'',categories:['全部','社交交流','德州活动','知识分享','户外运动','创业共创','其他'],selected:'全部',visible:[],product:null},
  onLoad:function(options){var p=club.findProduct(options.product);if(p)this.setData({product:p});},
  onShow:function(){this.load();},
  chooseCategory:function(e){this.setData({selected:e.currentTarget.dataset.value,product:null});this.filter();},
