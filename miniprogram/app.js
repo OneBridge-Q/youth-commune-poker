@@ -5,8 +5,13 @@ App({
       return;
     }
 
+    const env = 'COMPANY_CLOUD_ENV_PENDING';
+    if (env === 'COMPANY_CLOUD_ENV_PENDING') {
+      console.error('请先配置公司主体云开发环境 ID。');
+      return;
+    }
     wx.cloud.init({
-      env: 'cloud1-d5girmhw10f03643a',
+      env,
       traceUser: true
     });
   }
