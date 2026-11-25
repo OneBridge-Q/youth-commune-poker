@@ -3,7 +3,7 @@ const {findMember,APP_ID}=require('./memberLookup');
 const cloud=require('wx-server-sdk');
 cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});
 const db=cloud.database();
-const CATEGORIES=new Set(['社交交流','知识分享','户外运动','创业共创','其他']);
+const CATEGORIES=new Set(['社交交流','德州活动','知识分享','户外运动','创业共创','其他']);
 const plain=(s,max)=>typeof s==='string'&&s.trim().length>0&&s.trim().length<=max;
 function summary(r){return {id:r._id,title:r.title,category:r.category,description:r.description||'',location:r.location,startDate:r.startDate,startTime:r.startTime,status:r.status,feedbackOpen:!!r.feedbackOpenedAt,posterFileID:r.posterFileID||'',storeId:r.storeId,isTest:r.isTest===true,createdAt:r.createdAt};}
 async function getEvent(id){if(!plain(id,128))throw Error('INVALID_ID');const r=await db.collection('activities').where({_id:id}).limit(1).get();if(!r.data.length)throw Error('EVENT_NOT_FOUND');return r.data[0];}
