@@ -11,6 +11,7 @@ function findProduct(id){return products.filter(function(p){return p.id===id;})[
 function matches(activity,id){
  var p=findProduct(id);if(!p)return true;
  if(activity.productId)return activity.productId===id;
+ if(id==='poker'&&activity.category==='德州活动')return true;
  var title=String(activity.title||'').toLowerCase();
  return p.keywords.some(function(word){return title.indexOf(word.toLowerCase())>=0;});
 }
