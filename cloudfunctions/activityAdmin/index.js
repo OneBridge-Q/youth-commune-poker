@@ -6,7 +6,7 @@ const db=cloud.database();
 const CATEGORIES=new Set(['主题社交','社交交流','德州活动','知识分享','户外运动','创业共创','其他']);
 const PRODUCT_CATEGORY={"poker":"德州活动","outdoor":"户外运动","hardware":"知识分享","psychology":"知识分享","pitch":"创业共创","mvp":"创业共创"};
 const plain=(s,max)=>typeof s==='string'&&s.trim().length>0&&s.trim().length<=max;
-function summary(r){return {id:r._id,title:r.title,productId:r.productId||'',category:r.category==='社交交流'?'主题社交':r.category,description:r.description||'',location:r.location,startDate:r.startDate,startTime:r.startTime,status:r.status,feedbackOpen:!!r.feedbackOpenedAt,posterFileID:r.posterFileID||'',storeId:r.storeId,isTest:r.isTest===true,feeFen:r.feeFen||0,feeLabel:r.feeFen>0?'¥'+(r.feeFen/100).toFixed(2):'免费',capacity:r.capacity||0,createdAt:r.createdAt};}
+function summary(r){return {id:r._id,title:r.title,productId:r.productId||'',category:r.category==='社交交流'?'主题社交':r.category,description:r.description||'',location:r.location,startDate:r.startDate,startTime:r.startTime,status:r.status,feedbackOpen:!!r.feedbackOpenedAt,posterFileID:r.posterFileID||'',storeId:r.storeId,isTest:r.isTest===true,feeFen:r.feeFen||0,feeLabel:r.feeFen>0?'¥'+(r.feeFen/100).toFixed(2):'免费',capacity:r.capacity||0,createdAt:r.createdAt,updatedAt:r.updatedAt,editVersion:r.updatedAt?new Date(r.updatedAt).getTime():0};}
 async function getEvent(id){if(!plain(id,128))throw Error('INVALID_ID');const r=await db.collection('activities').where({_id:id}).limit(1).get();if(!r.data.length)throw Error('EVENT_NOT_FOUND');return r.data[0];}
 exports.main=async function(event){
  event=event||{};
@@ -30,7 +30,11 @@ exports.main=async function(event){
   }
   return {activities:rows};
  }
- if(action==='create'){
+ if(action==='get'){
+  const item=await getEvent(event.id);if(actor.role!=='superadmin'&&item.storeId!==actor.storeId)throw Error('WRONG_STORE');
+  return {activity:summary(item)};
+ }
+ if(action==='create'||action==='edit'){
   const {title,category='其他',description='',location,startDate,startTime,posterFileID='',isTest=false,productId='',feeFen=0,capacity=0}=event;
   if(!Number.isSafeInteger(feeFen)||feeFen<0||feeFen>1000000||!Number.isSafeInteger(capacity)||capacity<0||capacity>1000)throw Error('INVALID_SIGNUP_CONFIG');
   if(typeof productId!=='string'||(productId&&(!Object.prototype.hasOwnProperty.call(PRODUCT_CATEGORY,productId)||PRODUCT_CATEGORY[productId]!==category)))throw Error('INVALID_PRODUCT');
@@ -38,8 +42,29 @@ exports.main=async function(event){
   if(!plain(title,60)||!CATEGORIES.has(category)||typeof description!=='string'||description.length>500||!plain(location,120)||typeof isTest!=='boolean')throw Error('INVALID_INPUT');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(startDate||'')||!/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime||''))throw Error('INVALID_DATE');
   const startsAt=new Date(startDate+'T'+startTime+':00+08:00');
-  if(Number.isNaN(startsAt.getTime())||startsAt.getTime()<Date.now()+600000||new Date(startsAt.getTime()+28800000).toISOString().slice(0,10)!==startDate)throw Error('INVALID_DATE');
-  const r=await db.collection('activities').add({data:{title:title.trim(),category:category==='社交交流'?'主题社交':category,description:description.trim(),location:location.trim(),startDate,startTime,startsAt,posterFileID,isTest,productId,feeFen,capacity,signupCount:0,status:'draft',storeId:actor.storeId,createdBy:actor._id,createdAt:db.serverDate(),updatedAt:db.serverDate()}});
+  if(Number.isNaN(startsAt.getTime())||(action==='create'&&startsAt.getTime()<Date.now()+600000)||new Date(startsAt.getTime()+28800000).toISOString().slice(0,10)!==startDate)throw Error('INVALID_DATE');
+  const fields={title:title.trim(),category:category==='社交交流'?'主题社交':category,description:description.trim(),location:location.trim(),startDate,startTime,startsAt,posterFileID,productId,feeFen,capacity};
+  if(action==='edit'){
+   const original=await getEvent(event.id);
+   if(actor.role!=='superadmin'&&original.storeId!==actor.storeId)throw Error('WRONG_STORE');
+   if(event.editVersion!==(original.updatedAt?new Date(original.updatedAt).getTime():0))throw Error('CONCURRENT_UPDATE');
+   const sameTime=original.startDate===startDate&&original.startTime===startTime;
+   const count=await db.collection('activity_signups').where({activityId:original._id,status:'applied'}).count();
+   const checked=await db.collection('activity_signups').where({activityId:original._id,status:'applied','attendance.status':'checked_in'}).count();
+   return db.runTransaction(async tx=>{
+    const current=(await tx.collection('activities').doc(original._id).get()).data;
+    if(!current||current.status!==original.status||Number(current.signupRevision||0)!==Number(original.signupRevision||0)||String(current.updatedAt)!==String(original.updatedAt))throw Error('CONCURRENT_UPDATE');
+    if(actor.role!=='superadmin'&&current.storeId!==actor.storeId)throw Error('WRONG_STORE');
+    if(!['draft','published'].includes(current.status)|| (current.status==='published'&&new Date(current.startsAt).getTime()<=Date.now())||checked.total>0)throw Error('EDIT_NOT_AVAILABLE');
+    if(count.total>0&&(feeFen!==(current.feeFen||0)||capacity!==(current.capacity||0)))throw Error('SIGNUPS_EXIST');
+    if(!sameTime&&startsAt.getTime()<Date.now()+600000)throw Error('INVALID_DATE');
+    const data=Object.assign({},fields,{updatedAt:db.serverDate()});
+    if(capacity!==(current.capacity||0))data.signupCount=0;
+    await tx.collection('activities').doc(current._id).update({data});
+    return {id:current._id,status:current.status};
+   });
+  }
+  const r=await db.collection('activities').add({data:Object.assign({},fields,{isTest,signupCount:0,status:'draft',storeId:actor.storeId,createdBy:actor._id,createdAt:db.serverDate(),updatedAt:db.serverDate()})});
   return {id:r._id,status:'draft'};
  }
  if(action==='openFeedback'){
