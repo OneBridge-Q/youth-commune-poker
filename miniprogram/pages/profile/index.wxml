@@ -37,5 +37,5 @@
 
  </block>
  <view wx:if="{{!registered&&!loading&&!error}}" class="discover-card" bindtap="openActivities"><view class="section-name">先逛逛红圈活动 ↗</view><view class="shortcut-note">智力竞技 · 兴趣社交 · 青年共创</view></view>
- <view class="profile-footer">红圈 club · 让兴趣与成长同行</view>
+ <view class="profile-footer">红圈青年 · 让兴趣与成长同行</view>
 </view>

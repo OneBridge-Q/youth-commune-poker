@@ -1,7 +1,7 @@
 function displayScore(value){return typeof value==='number'&&isFinite(value)?String(value):'0';}
 Page({
  data:{loading:true,error:'',registered:false,nickname:'',avatarSrc:'',initial:'圈',skillDisplay:'—',charmDisplay:'—',isAdmin:false,adminExpanded:true,champions:[],championPreview:[],recapLabels:[],myActivities:[],activityPreview:[],showAllActivities:false,showAllChampions:false,activitiesLoading:false,activitiesError:'',championsLoading:false,championsError:''},
- onLoad:function(){wx.setNavigationBarTitle({title:'我的 · 红圈 club'});},
+ onLoad:function(){wx.setNavigationBarTitle({title:'我的 · 红圈青年'});},
  onShow:function(){this.loadProfile();},
  onHide:function(){this._seq=(this._seq||0)+1;},
  onUnload:function(){this._seq=(this._seq||0)+1;},

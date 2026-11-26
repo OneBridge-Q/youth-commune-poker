@@ -1,7 +1,7 @@
 var club=require('../../utils/club-home');
 Page({
  data:{pillars:['全部','智力竞技','兴趣社交','青年共创'],selectedPillar:'全部',products:club.products,registered:false,nickname:'',memberLoading:true,memberError:'',events:[],eventsLoading:true,eventsError:'',recaps:[],recapsLoading:true,recapsError:''},
- onLoad:function(){wx.setNavigationBarTitle({title:'红圈 club'});},
+ onLoad:function(){wx.setNavigationBarTitle({title:'友德胜红圈青年'});},
  onShow:function(){this.loadHome();},
  onHide:function(){this._loadSeq=(this._loadSeq||0)+1;},
  onUnload:function(){this._loadSeq=(this._loadSeq||0)+1;},
@@ -30,5 +30,5 @@ Page({
  goActivities:function(){wx.navigateTo({url:'/pages/activities/index'});},
  goRegister:function(){wx.navigateTo({url:'/pages/register/index'});},
  goMine:function(){wx.switchTab({url:'/pages/profile/index'});},
- onShareAppMessage:function(){return {title:'红圈 club｜智力竞技 · 兴趣社交 · 青年共创',path:'/pages/home/index'};}
+ onShareAppMessage:function(){return {title:'红圈青年｜智力竞技 · 兴趣社交 · 青年共创',path:'/pages/home/index'};}
 });

@@ -1,11 +1,11 @@
-<view wx:if="{{timelinePreview}}" class="card"><view class="muted">红圈 club · 活动分享</view><view class="heading" style="margin-top:18rpx">{{previewTitle||'红圈活动'}}</view><view wx:if="{{previewDate}}" class="info">{{previewDate}}</view><view wx:if="{{previewLocation}}" class="info">{{previewLocation}}</view><view class="muted" style="margin-top:24rpx">点击下方「前往小程序」查看最新活动详情与报名状态。</view></view>
+<view wx:if="{{timelinePreview}}" class="card"><view class="muted">红圈青年 · 活动分享</view><view class="heading" style="margin-top:18rpx">{{previewTitle||'红圈活动'}}</view><view wx:if="{{previewDate}}" class="info">{{previewDate}}</view><view wx:if="{{previewLocation}}" class="info">{{previewLocation}}</view><view class="muted" style="margin-top:24rpx">点击下方「前往小程序」查看最新活动详情与报名状态。</view></view>
 <block wx:else>
 <view wx:if="{{loading}}" class="card">加载活动中…</view>
 <view wx:if="{{error}}" class="card"><view class="muted">{{error}}</view></view>
 <block wx:if="{{activity}}">
  <view class="card">
   <image wx:if="{{activity.posterSrc}}" src="{{activity.posterSrc}}" mode="widthFix" class="detail-poster"/>
-  <view class="muted">{{activity.category}} · 红圈</view>
+  <view class="muted">{{activity.category}} · 红圈青年</view>
   <view class="heading" style="margin-top:18rpx;">{{activity.title}}</view>
   <view class="info">🗓 {{activity.startDate}} {{activity.startTime}}</view>
   <view class="info">📍 {{activity.location}}</view>

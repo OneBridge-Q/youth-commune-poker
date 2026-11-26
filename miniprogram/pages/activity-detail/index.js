@@ -1,4 +1,4 @@
-function shareTitle(a){return ('红圈｜'+a.title+' · '+a.startDate+' '+a.startTime).slice(0,80);}
+function shareTitle(a){return ('红圈青年｜'+a.title+' · '+a.startDate+' '+a.startTime).slice(0,80);}
 function safePreview(v,max){return typeof v==='string'?v.slice(0,max):'';}
 Page({
  data:{timelinePreview:false,previewTitle:'',previewDate:'',previewLocation:'',id:'',activity:null,myStatus:'none',loading:true,busy:false,error:'',feedbackStatus:'closed',sendingFeedback:false,games:[
@@ -49,7 +49,7 @@ Page({
   }).catch(()=>wx.showToast({title:'提交失败，请稍后重试',icon:'none'})).then(()=>this.setData({sendingFeedback:false}));
  },
  shareTimelineHint:function(){wx.showModal({title:'分享到朋友圈',content:'点击右上角「···」，选择「分享到朋友圈」。',showCancel:false});},
- onShareAppMessage:function(){var a=this.data.activity;if(!a||a.isTest||a.status!=='published')return {title:'红圈 club',path:'/pages/home/index'};var result={title:shareTitle(a),path:'/pages/activity-detail/index?id='+encodeURIComponent(a.id)};if(a.posterSrc)result.imageUrl=a.posterSrc;return result;},
- onShareTimeline:function(){var a=this.data.activity;if(!a||a.isTest||a.status!=='published')return {title:'红圈 club',query:''};var result={title:shareTitle(a),query:'id='+encodeURIComponent(a.id)+'&title='+encodeURIComponent(a.title)+'&date='+encodeURIComponent(a.startDate+' '+a.startTime)+'&location='+encodeURIComponent(a.location||'')};if(a.posterSrc)result.imageUrl=a.posterSrc;return result;},
+ onShareAppMessage:function(){var a=this.data.activity;if(!a||a.isTest||a.status!=='published')return {title:'红圈青年',path:'/pages/home/index'};var result={title:shareTitle(a),path:'/pages/activity-detail/index?id='+encodeURIComponent(a.id)};if(a.posterSrc)result.imageUrl=a.posterSrc;return result;},
+ onShareTimeline:function(){var a=this.data.activity;if(!a||a.isTest||a.status!=='published')return {title:'红圈青年',query:''};var result={title:shareTitle(a),query:'id='+encodeURIComponent(a.id)+'&title='+encodeURIComponent(a.title)+'&date='+encodeURIComponent(a.startDate+' '+a.startTime)+'&location='+encodeURIComponent(a.location||'')};if(a.posterSrc)result.imageUrl=a.posterSrc;return result;},
  register:function(){wx.navigateTo({url:'/pages/register/index?activityId='+encodeURIComponent(this.data.id)});}
 });

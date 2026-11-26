@@ -1,5 +1,5 @@
 <view class="home-shell">
- <view class="brand-top"><view class="brand-mark"></view><text>红圈 club</text><text class="brand-city">深圳 · 南山</text></view>
+ <view class="brand-top"><view class="brand-mark"></view><text>红圈青年</text><text class="brand-city">深圳 · 南山</text></view>
  <view class="hero">
   <view class="hero-ring ring-one"></view><view class="hero-ring ring-two"></view>
   <view class="hero-content"><view class="hero-eyebrow">RED CIRCLE / MEET · PLAY · CREATE</view><view class="hero-title"><view>在红圈，</view><view>遇见同频的人。</view></view>
@@ -29,5 +29,5 @@
  <view wx:elif="{{recapsError}}" class="empty-panel"><text>{{recapsError}}</text><button size="mini" bindtap="loadHome">重试</button></view>
  <view wx:elif="{{!recaps.length}}" class="empty-panel">精彩值得被记录。首批活动回顾将在活动结束后更新。</view>
  <view wx:for="{{recaps}}" wx:key="id" wx:for-item="recap" wx:for-index="recapIndex" class="recap-card"><view class="recap-meta">{{recap.date}} · {{recap.category}}</view><view class="event-title">{{recap.title}}</view><view class="recap-body">{{recap.body}}</view><view class="recap-photos"><image wx:for="{{recap.photos}}" wx:key="*this" wx:for-index="photoIndex" src="{{item}}" mode="aspectFill" data-index="{{recapIndex}}" data-photo="{{photoIndex}}" bindtap="previewRecap"/></view><view wx:if="{{recap.photosUnavailable}}" class="event-meta">部分照片暂时无法加载</view></view>
- <view class="home-footer"><view>红圈 club · 深圳市南山区</view><view>以兴趣相遇，以共创同行。</view></view>
+ <view class="home-footer"><view>红圈青年 · 深圳市南山区</view><view>以兴趣相遇，以共创同行。</view></view>
 </view>
