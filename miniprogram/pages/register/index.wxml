@@ -1,7 +1,7 @@
 <view class="card">
-  <view class="muted">YOUTH COMMUNE · 青年公社</view>
+  <view class="muted">RED CIRCLE · 红圈</view>
   <view class="heading">{{isEditing?'编辑会员资料':'从认识彼此开始'}}</view>
-  <view class="muted" style="margin-top:16rpx;">{{isEditing?'选择你希望在社区展示的头像和昵称。':'用熟悉的微信头像和昵称，轻松加入青年公社。'}}</view>
+  <view class="muted" style="margin-top:16rpx;">{{isEditing?'选择你希望在社区展示的头像和昵称。':'用熟悉的微信头像和昵称，轻松加入红圈。'}}</view>
 </view>
 <view class="card">
  <view class="heading" style="font-size:34rpx;">{{isEditing?'我的头像与昵称':'创建会员档案'}}</view>
@@ -20,9 +20,9 @@
    <checkbox-group bindchange="onConsent" style="margin-top:32rpx;">
     <label class="consent-line"><checkbox value="agreed" checked="{{agreed}}" color="#202B3C"/><text>我已阅读并同意以下会员注册说明</text></label>
    </checkbox-group>
-   <view class="policy">我们会保存用于识别会员的微信账户标识、你主动选择的昵称和头像（如选择，将上传至青年公社云存储）、注册确认记录，以及后续主动参与的社区活动与成长记录。用于会员身份识别、活动管理和会员资料展示。可向运营方申请查阅、更正或删除资料。头像为选填，不影响注册；不会自动获得管理员权限或积分。</view>
+   <view class="policy">我们会保存用于识别会员的微信账户标识、你主动选择的昵称和头像（如选择，将上传至红圈云存储）、注册确认记录，以及后续主动参与的社区活动与成长记录。用于会员身份识别、活动管理和会员资料展示。可向运营方申请查阅、更正或删除资料。头像为选填，不影响注册；不会自动获得管理员权限或积分。</view>
   </block>
   <view wx:if="{{error}}" class="error">{{error}}</view>
-  <button type="primary" form-type="submit" disabled="{{submitting}}" loading="{{submitting}}" style="margin-top:30rpx;">{{isEditing?'保存会员资料':'确认并加入青年公社'}}</button>
+  <button type="primary" form-type="submit" disabled="{{submitting}}" loading="{{submitting}}" style="margin-top:30rpx;">{{isEditing?'保存会员资料':'确认并加入红圈'}}</button>
  </form>
 </view>

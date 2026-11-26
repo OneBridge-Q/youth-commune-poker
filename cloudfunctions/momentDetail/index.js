@@ -9,5 +9,5 @@ exports.main=async(event)=>{
  const record=await db.collection(collection).doc(event.id).get().catch(()=>null);
  if(!record||!record.data||record.data.memberId!==member._id||record.data.status!=='verified'||record.data.isTest===true)throw Error('NOT_FOUND');
  const r=record.data;
- return {id:r._id,type,category:type==='hand'?r.category:null,title:type==='champion'?(r.eventName||'策略挑战活动冠军'):null,nickname:member.nickname||'会员',date:r.occurredAt||r.awardedAt,certificateId:type==='champion'?r.certificateId:null};
+ return {id:r._id,type,category:type==='hand'?r.category:null,title:type==='champion'?(r.eventName||'策略挑战活动冠军'):null,place:type==='champion'?(r.place||1):null,competitionType:r.competitionType||'',nickname:member.nickname||'会员',date:r.occurredAt||r.awardedAt,certificateId:type==='champion'?r.certificateId:null};
 };

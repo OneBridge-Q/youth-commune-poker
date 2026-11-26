@@ -51,7 +51,7 @@ exports.main=async function(event){
   return {recaps:list.map(function(x){
    const r=x.recap,files=Array.isArray(r.photoFileIDs)?r.photoFileIDs.slice(0,3):[];
    const photos=files.map(function(id){return urls[id];}).filter(Boolean);
-   return {id:x._id,title:r.title||x.title,body:r.body||'',date:x.startDate,category:x.category||'',photos:photos,photosUnavailable:photos.length<files.length};
+   return {id:x._id,title:r.title||x.title,body:r.body||'',date:x.startDate,category:x.category==='社交交流'?'主题社交':(x.category||''),photos:photos,photosUnavailable:photos.length<files.length};
   })};
  }
  const actor=await admin();

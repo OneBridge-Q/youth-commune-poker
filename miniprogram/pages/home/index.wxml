@@ -1,34 +1,33 @@
 <view class="home-shell">
- <view class="brand-top"><view class="brand-mark"></view><text>红圈 club</text><text class="brand-city">深圳 · 南山</text></view>
+ <view class="brand-top"><view class="brand-mark"></view><text>红圈青年</text><text class="brand-city">深圳 · 南山</text></view>
  <view class="hero">
   <view class="hero-ring ring-one"></view><view class="hero-ring ring-two"></view>
   <view class="hero-content"><view class="hero-eyebrow">RED CIRCLE / MEET · PLAY · CREATE</view><view class="hero-title"><view>在红圈，</view><view>遇见同频的人。</view></view>
    <view class="hero-pillars">智力竞技 · 兴趣社交 · 青年共创</view>
    <view class="hero-description">让思考、兴趣和想法相遇的复合型社群空间。</view>
-   <view class="hero-bottom"><view class="hero-location">深圳市南山区</view><button class="hero-button" bindtap="goActivities">近期活动 <text>↗</text></button></view>
   </view>
  </view>
- <view class="welcome-card">
+ <view class="welcome-card welcome-row">
   <view wx:if="{{memberLoading}}" class="welcome-note">正在打开你的红圈空间…</view>
   <view wx:elif="{{memberError}}" class="welcome-row" bindtap="loadHome"><view class="welcome-note">{{memberError}}</view><text class="welcome-action">重试 ›</text></view>
-  <view wx:elif="{{registered}}" class="welcome-row" bindtap="goMine"><view class="welcome-copy"><view class="welcome-name">{{nickname}}，欢迎回来</view><view class="welcome-note">看看今天，有哪些值得参与的相遇。</view></view><text class="welcome-action">我的空间 ↗</text></view>
-  <view wx:else class="welcome-row" bindtap="goRegister"><view class="welcome-copy"><view class="welcome-name">下一次相遇，从你开始</view><view class="welcome-note">加入红圈，记录属于自己的成长。</view></view><text class="welcome-action">加入红圈 ↗</text></view>
+  <view wx:elif="{{registered}}" class="welcome-copy"><view class="welcome-name">{{nickname}}，欢迎回来</view><view class="welcome-note">到店后扫描门店签到码。</view></view>
+  <view wx:else class="welcome-copy"><view class="welcome-name">欢迎来到红圈</view><view class="welcome-note">首次到店可注册并签到。</view></view>
+  <button class="join-button" bindtap="goCheckIn">门店签到 ›</button>
  </view>
- <view class="section-head"><view><view class="eyebrow">FIND YOUR CIRCLE</view><view class="section-title">找到你的兴趣圈</view></view></view>
- <view class="section-note">先认识活动类型，再选择适合你的具体场次。</view>
- <view class="pillar-row"><view wx:for="{{pillars}}" wx:key="*this" data-pillar="{{item}}" bindtap="choosePillar" class="pillar {{selectedPillar===item?'pillar-active':''}}">{{item}}</view></view>
- <view class="product-grid"><view wx:for="{{products}}" wx:key="id" class="product-tile" data-id="{{item.id}}" bindtap="openProduct"><view class="product-tag">{{item.pillar}} / {{item.tag}}</view><view class="product-name">{{item.name}}</view><view class="product-desc">{{item.description}}</view><view class="product-action">查看相关场次 <text>↗</text></view></view></view>
- <view class="section-note">活动类型介绍不代表已有排期，具体场次以发布信息为准。</view>
  <view class="section-head"><view><view class="eyebrow">WHAT'S NEXT</view><view class="section-title">近期活动</view></view><view class="text-link" bindtap="goActivities">全部活动 ›</view></view>
  <view wx:if="{{eventsLoading}}" class="empty-panel">正在寻找下一场相遇…</view>
  <view wx:elif="{{eventsError}}" class="empty-panel"><text>{{eventsError}}</text><button size="mini" bindtap="loadHome">重试</button></view>
  <view wx:elif="{{!events.length}}" class="empty-panel">下一场活动正在筹备中，发布后会出现在这里。</view>
- <view wx:for="{{events}}" wx:key="id" class="event-card" data-id="{{item.id}}" bindtap="openActivity"><image wx:if="{{item.posterSrc}}" src="{{item.posterSrc}}" mode="aspectFill" class="event-cover" data-index="{{index}}" binderror="onCoverError"/><view class="event-content"><view class="product-tag">{{item.category}}</view><view class="event-title">{{item.title}}</view><view class="event-meta">{{item.startDate}} · {{item.startTime}}</view><view class="event-meta">{{item.location}}</view><view class="product-action">查看详情与报名 ↗</view></view></view>
+ <view wx:for="{{events}}" wx:key="id" class="event-card" data-id="{{item.id}}" bindtap="openActivity"><image wx:if="{{item.posterSrc}}" src="{{item.posterSrc}}" mode="aspectFill" class="event-cover" data-index="{{index}}" binderror="onCoverError"/><view class="event-content"><view class="product-tag">{{item.category}} · {{item.feeLabel||'免费'}}</view><view class="event-title">{{item.title}}</view><view class="event-meta">{{item.startDate}} · {{item.startTime}}</view><view class="event-meta">{{item.location}}</view><view class="product-action">查看详情与报名 ↗</view></view></view>
+ <view class="section-head"><view><view class="eyebrow">FIND YOUR CIRCLE</view><view class="section-title">找到你的兴趣圈</view></view></view>
+ <view class="pillar-row"><view wx:for="{{pillars}}" wx:key="*this" data-pillar="{{item}}" bindtap="choosePillar" class="pillar {{selectedPillar===item?'pillar-active':''}}">{{item}}</view></view>
+ <view class="product-grid"><view wx:for="{{products}}" wx:key="id" class="product-tile" data-id="{{item.id}}" bindtap="openProduct"><view class="product-tag">{{item.pillar}} / {{item.tag}}</view><view class="product-name">{{item.name}}</view><view class="product-desc">{{item.description}}</view><view class="product-action">查看相关场次 <text>↗</text></view></view></view>
+ <view class="section-note">活动类型介绍不代表已有排期，具体场次以发布信息为准。</view>
  <view class="section-head"><view><view class="eyebrow">MOMENTS WE SHARE</view><view class="section-title">往期精彩回顾</view></view></view>
  <view class="section-note">把真实发生的相遇、交流与共创留下来。</view>
  <view wx:if="{{recapsLoading}}" class="empty-panel">正在加载活动回顾…</view>
  <view wx:elif="{{recapsError}}" class="empty-panel"><text>{{recapsError}}</text><button size="mini" bindtap="loadHome">重试</button></view>
  <view wx:elif="{{!recaps.length}}" class="empty-panel">精彩值得被记录。首批活动回顾将在活动结束后更新。</view>
  <view wx:for="{{recaps}}" wx:key="id" wx:for-item="recap" wx:for-index="recapIndex" class="recap-card"><view class="recap-meta">{{recap.date}} · {{recap.category}}</view><view class="event-title">{{recap.title}}</view><view class="recap-body">{{recap.body}}</view><view class="recap-photos"><image wx:for="{{recap.photos}}" wx:key="*this" wx:for-index="photoIndex" src="{{item}}" mode="aspectFill" data-index="{{recapIndex}}" data-photo="{{photoIndex}}" bindtap="previewRecap"/></view><view wx:if="{{recap.photosUnavailable}}" class="event-meta">部分照片暂时无法加载</view></view>
- <view class="home-footer"><view>红圈 club · 深圳市南山区</view><view>以兴趣相遇，以共创同行。</view></view>
+ <view class="home-footer"><view>红圈青年 · 深圳市南山区</view><view>以兴趣相遇，以共创同行。</view></view>
 </view>

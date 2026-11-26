@@ -1,12 +1,15 @@
+<view wx:if="{{timelinePreview}}" class="card"><view class="muted">红圈青年 · 活动分享</view><view class="heading" style="margin-top:18rpx">{{previewTitle||'红圈活动'}}</view><view wx:if="{{previewDate}}" class="info">{{previewDate}}</view><view wx:if="{{previewLocation}}" class="info">{{previewLocation}}</view><view class="muted" style="margin-top:24rpx">点击下方「前往小程序」查看最新活动详情与报名状态。</view></view>
+<block wx:else>
 <view wx:if="{{loading}}" class="card">加载活动中…</view>
 <view wx:if="{{error}}" class="card"><view class="muted">{{error}}</view></view>
 <block wx:if="{{activity}}">
  <view class="card">
   <image wx:if="{{activity.posterSrc}}" src="{{activity.posterSrc}}" mode="widthFix" class="detail-poster"/>
-  <view class="muted">{{activity.category}} · 青年公社</view>
+  <view class="muted">{{activity.category}} · 红圈青年</view>
   <view class="heading" style="margin-top:18rpx;">{{activity.title}}</view>
   <view class="info">🗓 {{activity.startDate}} {{activity.startTime}}</view>
   <view class="info">📍 {{activity.location}}</view>
+  <view class="info">报名费用：{{activity.feeLabel||'免费'}}</view><view wx:if="{{activity.capacity}}" class="info">限额 {{activity.capacity}} 人 · 剩余 {{activity.remaining}} 人</view>
   <view wx:if="{{activity.isTest}}" style="color:#a16d2a;margin-top:20rpx;">测试活动：报名与签到仅用于联调，不计正式成长。</view>
  </view>
  <view class="card"><view class="section-title">关于这次活动</view><view class="desc">{{activity.description||'与志同道合的朋友相聚，交流与成长。'}}</view></view>
@@ -14,7 +17,35 @@
   <block wx:if="{{myStatus==='checked_in'}}"><view class="success">✓ 已确认到场</view><view class="muted">如为误签，请联系管理员撤销。签到不会自动发放战力值或魅力值。</view></block>
   <block wx:elif="{{myStatus==='applied'}}"><view class="success">✓ 你已报名 · 待签到</view><button disabled="{{busy}}" bindtap="cancel">取消报名</button></block>
   <button wx:elif="{{myStatus==='not_registered'}}" type="primary" bindtap="register">先注册成为会员</button>
+  <block wx:elif="{{activity.feeFen>0}}"><button disabled="true">支付尚未开通</button><view class="muted">暂无法完成付费报名，请关注后续开放通知。</view></block>
+  <button wx:elif="{{activity.capacity>0 && activity.remaining===0}}" disabled="true">报名已满</button>
   <button wx:else type="primary" disabled="{{busy}}" loading="{{busy}}" bindtap="apply">立即报名</button>
   <view class="muted" style="margin-top:18rpx;">活动报名不涉及扑克牌局输赢或现金奖励。</view>
  </view>
+ <view wx:if="{{!activity.isTest && activity.status==='published'}}" class="card share-card"><view class="section-title">{{myStatus==='applied'?'邀请朋友一起参加':'分享这场活动'}}</view><view class="muted">和朋友分享活动信息，一起发现新的兴趣。</view><view class="share-actions"><button open-type="share" class="share-primary">分享给好友</button><button bindtap="shareTimelineHint" class="share-secondary">分享到朋友圈</button></view></view>
+ <view wx:if="{{feedbackStatus==='open'||feedbackStatus==='submitted'}}" class="card">
+  <view class="section-title">活动满意度问卷</view>
+  <view wx:if="{{feedbackStatus==='submitted'}}" class="success">✓ 已提交，感谢反馈</view>
+  <block wx:else>
+   <view class="feedback-question">今天玩了哪种游戏？（可多选）</view>
+   <checkbox-group bindchange="chooseGames">
+    <label wx:for="{{games}}" wx:key="name" class="feedback-option">
+     <checkbox value="{{item.name}}" checked="{{item.selected}}" disabled="{{sendingFeedback}}"/>{{item.name}}
+    </label>
+   </checkbox-group>
+   <view class="feedback-question">你对所选玩法的评价如何？</view>
+   <view class="muted">1 分很不满意，5 分很满意。</view>
+   <view wx:for="{{games}}" wx:key="name" wx:for-index="gameIndex">
+    <block wx:if="{{item.selected}}">
+     <view class="feedback-option">{{item.name}}</view>
+     <view class="feedback-ratings">
+      <button wx:for="{{ratings}}" wx:key="*this" wx:for-item="score" size="mini" disabled="{{sendingFeedback}}" class="{{item.rating===score?'chosen':''}}" data-game="{{gameIndex}}" data-rating="{{score}}" bindtap="rateGame">{{score}}</button>
+     </view>
+    </block>
+   </view>
+   <view class="muted feedback-option">评价会用于生成你的个人活动回顾。</view>
+   <button type="primary" bindtap="submitFeedback" loading="{{sendingFeedback}}" disabled="{{sendingFeedback}}">提交评价</button>
+  </block>
+ </view>
+</block>
 </block>

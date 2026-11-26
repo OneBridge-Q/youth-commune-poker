@@ -6,7 +6,7 @@ const fs=require('node:fs');
 const crypto=require('node:crypto');
 const source=fs.readFileSync(__dirname+'/../cloudfunctions/activityRecaps/index.js','utf8');
 let actor={_id:'admin-one',role:'admin',storeId:'store-001',status:'active'};
-let ctx={OPENID:'test-only',APPID:'wx38e120d7481c3436',ENV:'cloud1-test'};
+let ctx={OPENID:'test-only',APPID:'wxf108b994bb81e185',ENV:'cloud1-test'};
 const docs=[];let signed=[];
 function get(obj,path){return path.split('.').reduce((o,k)=>o&&o[k],obj);}
 function matches(x,q){return Object.keys(q).every(k=>q[k]&&q[k].op==='exists'?(get(x,k)!==undefined)===q[k].value:get(x,k)===q[k]);}
@@ -18,7 +18,7 @@ class Query{
 }
 const db={collection(name){assert.equal(name,'activities');return {where:q=>new Query(q)};},command:{exists:v=>({op:'exists',value:v})},serverDate:()=>new Date('2026-11-16T06:00:00Z')};
 const cloud={DYNAMIC_CURRENT_ENV:'test',init(){},database:()=>db,getWXContext:()=>ctx,async getTempFileURL({fileList}){signed=fileList;return{fileList:fileList.map(f=>({fileID:f.fileID,status:0,tempFileURL:'https://example.test/'+encodeURIComponent(f.fileID)}))};}};
-const moduleStub={exports:{}};const sandbox={exports:moduleStub.exports,module:moduleStub,require(name){if(name==='wx-server-sdk')return cloud;if(name==='crypto')return crypto;if(name==='./memberLookup')return{APP_ID:'wx38e120d7481c3436',findMember:async()=>actor};throw Error(name);},process:{env:{}},console,Date,Set,Array,Object,Number,String,Error};
+const moduleStub={exports:{}};const sandbox={exports:moduleStub.exports,module:moduleStub,require(name){if(name==='wx-server-sdk')return cloud;if(name==='crypto')return crypto;if(name==='./memberLookup')return{APP_ID:'wxf108b994bb81e185',findMember:async()=>actor};throw Error(name);},process:{env:{}},console,Date,Set,Array,Object,Number,String,Error};
 vm.runInNewContext(source,sandbox);const run=moduleStub.exports.main;
 function base(id,overrides={}){return Object.assign({_id:id,title:'真实活动',category:'知识分享',status:'published',storeId:'store-001',startDate:'2025-11-15',startTime:'19:30'},overrides);}
 const owner=crypto.createHash('sha256').update('admin-one').digest('hex').slice(0,24);
@@ -40,7 +40,7 @@ let count=0;async function test(name,fn){await fn();count++;console.log('PASS '+
  await test('stale writes blocked',async()=>assert.rejects(run(input('real')),/RECAP_CHANGED_REFRESH/));
  await test('test content retained without public display',async()=>{await run(input('test-record',{isTest:true}));const r=await run({action:'list'});assert.equal(r.recaps.length,1);assert.equal(r.recaps[0].id,'real');assert.equal(r.recaps[0].photos.length,1);assert.equal(signed[0].maxAge,600);assert.equal(r.recaps[0].updatedBy,undefined);});
  await test('unpublish leaves activities intact',async()=>{const r=await run({action:'hide',id:'real',expectedRevision:1});assert.equal(r.status,'hidden');assert.equal(docs.find(x=>x._id==='real').status,'published');assert.equal((await run({action:'list'})).recaps.length,0);});
- await test('wrong AppID cannot edit',async()=>{ctx.APPID='other-app';await assert.rejects(run({action:'manage'}),/APP_ID_MISMATCH/);ctx.APPID='wx38e120d7481c3436';});
+ await test('wrong AppID cannot edit',async()=>{ctx.APPID='other-app';await assert.rejects(run({action:'manage'}),/APP_ID_MISMATCH/);ctx.APPID='wxf108b994bb81e185';});
  await test('admin listing scoped to store',async()=>{const r=await run({action:'manage'});assert(!r.activities.some(x=>x.id==='other'));assert(r.uploadDir.startsWith('activity-recaps/'));});
  console.log('TOTAL '+count+' passed (mock cloud; not a live WeChat test)');
 })().catch(e=>{console.error(e);process.exit(1);});

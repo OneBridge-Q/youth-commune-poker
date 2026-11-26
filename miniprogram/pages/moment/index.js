@@ -1,3 +1,4 @@
+const sngPoster=require('./sng-poster');
 const labels={straight_flush:'同花顺',four_of_a_kind:'四条',full_house:'葫芦',flush:'同花',straight:'顺子',three_of_a_kind:'三条',two_pair:'两对',one_pair:'一对',high_card:'高牌'};
 const designs={
  straight_flush:[['A','♠'],['K','♠'],['Q','♠'],['J','♠'],['10','♠']],
@@ -8,28 +9,38 @@ const designs={
  three_of_a_kind:[['Q','♠'],['Q','♥'],['Q','♦'],['8','♣'],['3','♠']]
 };
 Page({
- data:{loading:true,ready:false,error:'',isChampion:false},
+ data:{loading:true,ready:false,error:'',isSng:false,rendered:false,posterWidth:320,posterHeight:480},
  async onLoad(options){
   if(!options.id||!['hand','champion'].includes(options.type)){this.setData({loading:false,error:'缺少有效荣誉编号'});return;}
   try{
    const res=await wx.cloud.callFunction({name:'momentDetail',data:{id:options.id,type:options.type}});
    const item=res.result;if(!item||!item.id)throw Error('NOT_FOUND');
-   this.setData({loading:false,ready:true,isChampion:item.type==='champion'});
-   this.posterItem=item;
-   setTimeout(()=>this.draw(item),80);
+   const isSng=item.type==='champion'&&item.competitionType==='sng';
+   const details=isSng?await sngPoster.loadMemberDetails():null;
+   const posterWidth=Math.min(320,wx.getSystemInfoSync().windowWidth-56);
+   const posterHeight=Math.round(posterWidth*(isSng?4/3:3/2));
+   this.setData({loading:false,ready:true,isSng,posterWidth,posterHeight},()=>{
+    if(isSng){
+     const ctx=wx.createCanvasContext('momentPoster',this);
+     sngPoster.draw(ctx,item,details,posterWidth,posterHeight,()=>this.setData({rendered:true}));
+    }else this.draw(item);
+   });
   }catch(e){this.setData({loading:false,error:'无法获取已认证荣誉，可能尚未审核或已撤销'});}
  },
  draw(item){
   const ctx=wx.createCanvasContext('momentPoster',this);
-  const navy='#142238',gold='#D9BC80',white='#FFF9EE';
+  const placeTitle=item.place===2?'亚军':'冠军';
+  const competitionTitle={sng:'单场SNG',weekly:'周赛',monthly:'月赛'}[item.competitionType];
+  const navy='#142238',gold=item.place===2?'#C7D3E3':'#D9BC80',white='#FFF9EE';
+  const scale=this.data.posterWidth/320;ctx.scale(scale,scale);
   ctx.setFillStyle(navy);ctx.fillRect(0,0,320,480);
   ctx.setStrokeStyle(gold);ctx.setLineWidth(1);ctx.strokeRect(15,15,290,450);
-  ctx.setTextAlign('center');ctx.setFillStyle(gold);ctx.setFontSize(12);ctx.fillText('YOUTH COMMUNE · POKER CLUB',160,49);
-  ctx.setFillStyle(white);ctx.setFontSize(29);ctx.fillText(item.type==='champion'?'CHAMPION':'POKER MOMENT',160,111);
-  ctx.setFillStyle(gold);ctx.setFontSize(24);ctx.fillText(item.type==='champion'?'冠军荣誉':labels[item.category]||'精彩手牌',160,158);
+  ctx.setTextAlign('center');ctx.setFillStyle(gold);ctx.setFontSize(12);ctx.fillText('RED CIRCLE CLUB',160,49);
+  ctx.setFillStyle(white);ctx.setFontSize(29);ctx.fillText(item.type==='champion'?(item.place===2?'RUNNER-UP':'CHAMPION'):'POKER MOMENT',160,111);
+  ctx.setFillStyle(gold);ctx.setFontSize(24);ctx.fillText(item.type==='champion'?(competitionTitle?competitionTitle+placeTitle+'奖杯':placeTitle+'荣誉'):labels[item.category]||'精彩手牌',160,158);
   if(item.type==='champion'){
    ctx.setFillStyle(gold);ctx.setFontSize(46);ctx.fillText('★',160,228);
-   ctx.setFillStyle(white);ctx.setFontSize(15);ctx.fillText(String(item.title||'策略挑战活动冠军').slice(0,19),160,273);
+   ctx.setFillStyle(white);ctx.setFontSize(15);ctx.fillText(String(item.title||'策略挑战活动').slice(0,19),160,273);
   }else{
    const cards=designs[item.category]||[['A','♠'],['K','♥'],['Q','♦'],['J','♣'],['9','♠']];
    cards.forEach(([rank,suit],i)=>{
@@ -44,9 +55,31 @@ Page({
   ctx.setFillStyle('#B5BED0');ctx.setFontSize(12);ctx.fillText(date,160,378);
   if(item.certificateId){ctx.setFontSize(10);ctx.fillText('CERT ID: '+String(item.certificateId).slice(0,27),160,400);}
   ctx.setFillStyle(gold);ctx.setFontSize(11);ctx.fillText('PLAY · CONNECT · GROW',160,444);
-  ctx.draw();
+  ctx.draw(false,()=>this.setData({rendered:true}));
+ },
+ exportPoster(onReady){
+  if(!this.data.rendered)return;
+  const options={canvasId:'momentPoster',success:res=>onReady(res.tempFilePath),
+   fail:()=>wx.showToast({title:'生成失败，请重试',icon:'none'})};
+  if(this.data.isSng){
+   options.destWidth=sngPoster.WIDTH;
+   options.destHeight=sngPoster.HEIGHT;
+  }
+  wx.canvasToTempFilePath(options,this);
+ },
+ sharePoster(){
+  this.exportPoster(path=>{
+   if(typeof wx.showShareImageMenu==='function'){
+    wx.showShareImageMenu({path,fail:e=>{
+     if(!String(e.errMsg||'').includes('cancel'))wx.previewImage({current:path,urls:[path]});
+    }});
+   }else wx.previewImage({current:path,urls:[path]});
+  });
  },
  savePoster(){
-  wx.canvasToTempFilePath({canvasId:'momentPoster',success:res=>wx.saveImageToPhotosAlbum({filePath:res.tempFilePath,success:()=>wx.showToast({title:'已保存'}),fail:()=>wx.showModal({title:'保存失败',content:'请检查相册权限',showCancel:false})}),fail:()=>wx.showToast({title:'生成失败',icon:'none'})},this);
+  this.exportPoster(filePath=>wx.saveImageToPhotosAlbum({filePath,
+   success:()=>wx.showToast({title:'已保存'}),
+   fail:()=>wx.showModal({title:'保存失败',content:'请检查相册权限',showCancel:false})
+  }));
  }
 });

@@ -1,0 +1,21 @@
+<view wx:if="{{manage}}" class="card">
+ <view class="heading">门店签到码</view>
+ <view wx:if="{{loading}}" class="muted">正在生成签到码…</view>
+ <view wx:elif="{{error}}" class="muted">{{error}}</view>
+ <block wx:elif="{{codePath}}">
+  <image class="check-in-code" src="{{codePath}}" mode="aspectFit" show-menu-by-longpress />
+  <view class="muted">{{day}} 当日有效 · 北京时间零点更新</view>
+ </block>
+ <button wx:if="{{!loading}}" bindtap="loadCode">刷新签到码</button>
+</view>
+<view wx:else class="card">
+ <view class="heading">门店签到</view>
+ <view class="muted">到店后扫门店当天的签到码。新会员可先注册，每天签到一次。</view>
+ <view wx:if="{{loading}}" class="status">正在加载…</view>
+ <view wx:elif="{{done}}" class="status">{{done}}</view>
+ <view wx:if="{{error}}" class="status">{{error}} <button size="mini" bindtap="loadStatus">重试</button></view>
+ <block wx:if="{{!loading&&!busy&&registered!==null}}">
+  <button type="primary" bindtap="scan">扫门店签到码</button>
+  <button wx:if="{{registered===false}}" bindtap="register">注册会员</button>
+ </block>
+</view>

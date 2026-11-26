@@ -3,7 +3,7 @@ const cloud=require('wx-server-sdk');
 const crypto=require('crypto');
 cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});
 const db=cloud.database();
-const APP_ID='wx38e120d7481c3436';
+const APP_ID='wxf108b994bb81e185';
 const links=db.collection('member_identities');
 function identityId(openid){
  return 'wx_'+crypto.createHash('sha256').update(APP_ID+':'+openid).digest('hex');

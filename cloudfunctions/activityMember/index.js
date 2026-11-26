@@ -3,11 +3,12 @@ const {findMember,APP_ID}=require('./memberLookup');
 const cloud=require('wx-server-sdk');
 const {createRegistration,signupId}=require('./registration');
 const {readParticipation}=require('./participation');
+const {feedbackStatus,submitFeedback,readRecaps,eligiblePeriods}=require('./feedback');
 cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});
 const db=cloud.database({throwOnNotFound:false});
 const register=createRegistration(db);
 const valid=s=>typeof s==='string'&&s.length>0&&s.length<=128;
-const view=x=>({id:x._id,title:x.title,category:x.category,description:x.description||'',location:x.location,startDate:x.startDate,startTime:x.startTime,posterFileID:x.posterFileID||'',status:x.status,isTest:x.isTest===true});
+const view=x=>({id:x._id,title:x.title,productId:x.productId||'',category:x.category==='社交交流'?'主题社交':x.category,description:x.description||'',location:x.location,startDate:x.startDate,startTime:x.startTime,posterFileID:x.posterFileID||'',status:x.status,isTest:x.isTest===true,feeFen:x.feeFen||0,feeLabel:x.feeFen>0?'¥'+(x.feeFen/100).toFixed(2):'免费',capacity:x.capacity||0,remaining:x.capacity>0?Math.max(0,x.capacity-(x.signupCount||0)):null});
 async function attachPosters(activities){
  const rows=activities.map(view);
  const ids=Array.from(new Set(rows.map(x=>x.posterFileID).filter(x=>typeof x==='string'&&/^cloud:\/\/[a-zA-Z0-9._-]+\/activity-posters\//.test(x))));
@@ -48,14 +49,17 @@ exports.main=async function(event){
     if(m.status&&m.status!=='active')throw Error('MEMBER_DISABLED');
     const r=await db.collection('activity_signups').doc(signupId(a._id,m._id)).get();
     const s=r.data;
+    output.feedbackStatus=feedbackStatus(a,s);
     output.myStatus=s&&s.status==='applied'?(s.attendance&&s.attendance.status==='checked_in'?'checked_in':'applied'):'none';
    }
   }
   return output;
  }
+ if(event.action==='feedback')return submitFeedback(db,event.id,await me(),event.answers);
+ if(event.action==='recaps')return {recaps:await readRecaps(db,(await me())._id)};
  if(event.action==='mine'){
   const member=await me(),r=await readParticipation(db,member._id);
-  return {applications:r.applications,participated:r.participated,formalAttended:r.formalParticipated.length};
+  return {applications:r.applications,participated:r.participated,formalAttended:r.formalParticipated.length,recapLabels:eligiblePeriods(r.formalParticipated).map(period=>period.label)};
  }
  if(event.action==='apply'||event.action==='cancel')return register(event.action,event.id,await me());
  throw Error('UNSUPPORTED_ACTION');

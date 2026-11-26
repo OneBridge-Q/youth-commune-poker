@@ -1,14 +1,16 @@
 var club=require('../../utils/club-home');
 Page({
  data:{pillars:['全部','智力竞技','兴趣社交','青年共创'],selectedPillar:'全部',products:club.products,registered:false,nickname:'',memberLoading:true,memberError:'',events:[],eventsLoading:true,eventsError:'',recaps:[],recapsLoading:true,recapsError:''},
- onLoad:function(){wx.setNavigationBarTitle({title:'红圈 club'});},
+ onLoad:function(){wx.setNavigationBarTitle({title:'友德胜红圈青年'});},
  onShow:function(){this.loadHome();},
  onHide:function(){this._loadSeq=(this._loadSeq||0)+1;},
  onUnload:function(){this._loadSeq=(this._loadSeq||0)+1;},
  loadHome:function(){
   var page=this,seq=(page._loadSeq||0)+1;page._loadSeq=seq;
   page.setData({memberLoading:true,memberError:'',eventsLoading:true,eventsError:'',recapsLoading:true,recapsError:''});
-  wx.cloud.callFunction({name:'memberHome'}).then(function(r){
+  if(wx.getStorageSync('redcircle:signed-out')){
+   page.setData({memberLoading:false,registered:false,nickname:''});
+  }else wx.cloud.callFunction({name:'memberHome'}).then(function(r){
    if(seq!==page._loadSeq)return;var result=r.result||{},m=result.member||{};
    page.setData({memberLoading:false,registered:!!result.registered,nickname:m.nickname||'红圈会员'});
    if(result.registered)wx.cloud.callFunction({name:'memberIdentity'}).catch(function(){/* Optional identity sync cannot block the home page. */});
@@ -28,7 +30,32 @@ Page({
  previewRecap:function(e){var r=this.data.recaps[Number(e.currentTarget.dataset.index)],i=Number(e.currentTarget.dataset.photo);if(r&&r.photos&&r.photos.length)wx.previewImage({urls:r.photos,current:r.photos[i]||r.photos[0]});},
  onCoverError:function(e){var i=Number(e.currentTarget.dataset.index);if(Number.isInteger(i)&&this.data.events[i]){var patch={};patch['events['+i+'].posterSrc']='';this.setData(patch);}},
  goActivities:function(){wx.navigateTo({url:'/pages/activities/index'});},
- goRegister:function(){wx.navigateTo({url:'/pages/register/index'});},
- goMine:function(){wx.switchTab({url:'/pages/profile/index'});},
- onShareAppMessage:function(){return {title:'红圈 club｜智力竞技 · 兴趣社交 · 青年共创',path:'/pages/home/index'};}
+ goCheckIn:function(){
+  if(wx.getStorageSync('redcircle:signed-out'))return wx.switchTab({url:'/pages/profile/index'});
+  if(this._scanning)return;
+  this._scanning=true;
+  wx.scanCode({
+   onlyFromCamera:true,
+   success:async scan=>{
+    try{
+     const scene=String(scan.path||'').match(/^\/?pages\/check-in\/index\?scene=([a-f0-9]{32})(?:&|$)/);
+     if(!scene)return wx.showToast({title:'请扫描红圈门店签到码',icon:'none'});
+     const token=scene[1];
+     try{
+      const {result}=await wx.cloud.callFunction({name:'activityAttendance',data:{action:'storeCheckIn',token}});
+      if(!result||!['checked_in','already_checked_in'].includes(result.status))throw Error('CHECK_IN_FAILED');
+      wx.showToast({title:result.status==='checked_in'?'签到成功 · 魅力值 +1':'今天已签到',icon:'none'});
+     }catch(e){
+      const error=String(e.errMsg||e.message||e);
+      if(error.includes('REGISTER_REQUIRED')){
+       return wx.navigateTo({url:'/pages/register/index?from=home-check-in&scene='+token});
+      }
+      wx.showToast({title:error.includes('STORE_CODE_EXPIRED')?'签到码已过期，请扫当天的新码':'签到暂未完成，请重试',icon:'none'});
+     }
+    }finally{this._scanning=false;}
+   },
+   fail:()=>{this._scanning=false;}
+  });
+ },
+ onShareAppMessage:function(){return {title:'红圈青年｜智力竞技 · 兴趣社交 · 青年共创',path:'/pages/home/index'};}
 });

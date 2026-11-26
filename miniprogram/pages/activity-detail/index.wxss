@@ -1,2 +1,10 @@
 .info{margin-top:20rpx;color:#536074;font-size:29rpx}.section-title{font-weight:700;font-size:32rpx;margin-bottom:22rpx}.desc{font-size:29rpx;line-height:1.8;white-space:pre-wrap;color:#414d5d}.success{font-size:30rpx;color:#28705d;text-align:center;margin:12rpx 0 24rpx}
 .detail-poster{display:block;width:100%;border-radius:14rpx;margin-bottom:26rpx}
+
+.feedback-question { margin: 24rpx 0 12rpx; font-weight: 600; }
+.feedback-option { display: block; margin: 16rpx 0; }
+.feedback-ratings { display: flex; gap: 8rpx; }
+.feedback-ratings button { flex: 1; padding: 0; }
+.feedback-ratings .chosen { background: #202b3c; color: #fff; }
+
+.share-actions{display:flex;gap:16rpx;margin-top:24rpx}.share-actions button{flex:1;margin:0;padding:0 12rpx;font-size:27rpx;line-height:82rpx;border-radius:18rpx}.share-primary{background:#C53236;color:#fff}.share-secondary{background:#F5ECE8;color:#A33532}.share-actions button::after{border:0}

@@ -3,18 +3,18 @@
  <view wx:if="{{activity}}" class="muted">{{activity.startDate}} {{activity.startTime}}</view>
  <view wx:if="{{activity.isTest}}" class="test-label">测试活动：签到可联调，不计入正式参与次数或成长履历。</view>
  <view class="numbers"><view><text>{{stats.registered}}</text>已报名</view><view><text>{{stats.checkedIn}}</text>已签到</view><view><text>{{stats.notCheckedIn}}</text>未签到</view></view>
- <view class="muted">只确认真实到场；签到不会发放战力值或魅力值。</view>
+ <view class="muted">确认参加本场活动的会员。<text wx:if="{{pendingArrivals}}"> 当前有 {{pendingArrivals}} 条现场签到申请。</text></view>
 </view>
 <view class="card">
- <view class="search"><input placeholder="按报名时的会员昵称搜索" value="{{keyword}}" bindinput="onKeyword" maxlength="32"/><button size="mini" disabled="{{busy||loading}}" bindtap="search">搜索 / 刷新</button></view>
+ <view class="search"><input placeholder="按会员昵称搜索" value="{{keyword}}" bindinput="onKeyword" maxlength="32"/><button size="mini" disabled="{{busy||loading}}" bindtap="search">搜索 / 刷新</button></view>
  <view class="tabs"><button size="mini" class="{{filter==='all'?'active':''}}" data-filter="all" bindtap="chooseFilter">全部</button><button size="mini" class="{{filter==='not_checked_in'?'active':''}}" data-filter="not_checked_in" bindtap="chooseFilter">未签到</button><button size="mini" class="{{filter==='checked_in'?'active':''}}" data-filter="checked_in" bindtap="chooseFilter">已签到</button></view>
  <view wx:if="{{error}}" class="error">{{error}}</view><view wx:if="{{loading}}" class="muted">正在加载名单…</view>
  <view wx:if="{{activity&&!canCheckIn}}" class="muted">当前不能新增签到；开场前2小时开放，未发布或已取消的活动不开放。误签仍可撤销。</view>
  <view wx:for="{{rows}}" wx:key="id" class="person">
-  <view class="person-main"><view class="person-name">{{item.nickname}}</view><view class="muted">{{item.attendanceStatus==='checked_in'?'已签到 · '+item.checkedInAt:'未签到'}}</view><view wx:if="{{item.isTest}}" class="test-label">测试记录</view></view>
+  <view class="person-main"><view class="person-name">{{item.nickname}}</view><view class="muted">{{item.attendanceStatus==='checked_in'?'已签到 · '+item.checkedInAt:(item.walkInPending?'现场签到申请 · 待确认':'未签到')}}</view><view wx:if="{{item.isTest}}" class="test-label">测试记录</view></view>
   <view class="person-actions"><button wx:if="{{item.attendanceStatus!=='checked_in'}}" size="mini" type="primary" disabled="{{busy||loading||!canCheckIn}}" data-id="{{item.id}}" bindtap="checkIn">确认签到</button><button wx:else size="mini" disabled="{{busy||loading}}" data-id="{{item.id}}" bindtap="openRevoke">撤销误签</button><button size="mini" disabled="{{busy||loading}}" data-id="{{item.id}}" bindtap="history">操作记录</button></view>
  </view>
- <view wx:if="{{!loading&&!rows.length}}" class="muted">没有符合条件的报名记录。</view>
+ <view wx:if="{{!loading&&!rows.length}}" class="muted">没有符合条件的签到记录。</view>
  <button wx:if="{{nextOffset!==null}}" disabled="{{busy||loading}}" bindtap="more">加载更多</button>
 </view>
 <view wx:if="{{revokeTarget}}" class="overlay"><view class="dialog"><view class="heading">撤销 {{revokeTarget.nickname}} 的签到</view><view class="muted">原报名保留，已参加次数与成长履历同步修正。</view><textarea value="{{reason}}" bindinput="onReason" maxlength="200" placeholder="请说明误签原因（2—200个字符）"/><button type="primary" disabled="{{busy}}" loading="{{busy}}" bindtap="revoke">确认撤销</button><button disabled="{{busy}}" bindtap="closeRevoke">返回</button><view wx:if="{{error}}" class="error">{{error}}</view></view></view>

@@ -1,6 +1,6 @@
 {
- "pages":["pages/home/index","pages/ranking/index","pages/profile/index","pages/highlights/index","pages/moment/index","pages/admin-highlights/index","pages/admin-champions/index","pages/register/index","pages/activities/index","pages/activity-detail/index","pages/admin-activities/index","pages/growth/index","pages/admin-recaps/index","pages/charisma/index","pages/admin-attendance/index","pages/participation/index"],
- "window":{"navigationBarTitleText":"青年公社 Poker Club","navigationBarBackgroundColor":"#202B3C","navigationBarTextStyle":"white","backgroundColor":"#f5f6f8"},
+ "pages":["pages/home/index","pages/ranking/index","pages/profile/index","pages/highlights/index","pages/moment/index","pages/admin-highlights/index","pages/admin-champions/index","pages/register/index","pages/activities/index","pages/activity-detail/index","pages/admin-activities/index","pages/growth/index","pages/admin-recaps/index","pages/charisma/index","pages/admin-attendance/index","pages/participation/index","pages/member-recaps/index","pages/check-in/index","pages/admin-members/index"],
+ "window":{"navigationBarTitleText":"友德胜红圈青年","navigationBarBackgroundColor":"#202B3C","navigationBarTextStyle":"white","backgroundColor":"#f5f6f8"},
  "tabBar":{"color":"#8A9099","selectedColor":"#202B3C","list":[{"pagePath":"pages/home/index","text":"首页"},{"pagePath":"pages/ranking/index","text":"天梯"},{"pagePath":"pages/profile/index","text":"我的"}]},
  "lazyCodeLoading":"requiredComponents"
 }
