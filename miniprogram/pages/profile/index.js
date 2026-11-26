@@ -3,11 +3,11 @@ Page({
  data:{loading:true,error:'',registered:false,nickname:'',avatarSrc:'',initial:'圈',skillDisplay:'—',charmDisplay:'—',isAdmin:false,adminExpanded:true,champions:[],championPreview:[],recapLabels:[],myActivities:[],activityPreview:[],showAllActivities:false,showAllChampions:false,activitiesLoading:false,activitiesError:'',championsLoading:false,championsError:''},
  onLoad:function(){wx.setNavigationBarTitle({title:'我的 · 红圈青年'});},
  onShow:function(){this.loadProfile();},
- onHide:function(){this._seq=(this._seq||0)+1;},
- onUnload:function(){this._seq=(this._seq||0)+1;},
+ onHide:function(){clearTimeout(this._codeTimer);this._seq=(this._seq||0)+1;},
+ onUnload:function(){clearTimeout(this._codeTimer);this._seq=(this._seq||0)+1;},
  loadProfile:function(){
   var page=this,seq=(page._seq||0)+1;page._seq=seq;
-  page.setData({loading:true,error:'',registered:false,isAdmin:false,avatarSrc:'',nickname:'',skillDisplay:'—',charmDisplay:'—',champions:[],championPreview:[],recapLabels:[],myActivities:[],activityPreview:[],activitiesError:'',championsError:''});
+  page.setData({adminCode:'',adminCodeError:false,loading:true,error:'',registered:false,isAdmin:false,avatarSrc:'',nickname:'',skillDisplay:'—',charmDisplay:'—',champions:[],championPreview:[],recapLabels:[],myActivities:[],activityPreview:[],activitiesError:'',championsError:''});
   wx.cloud.callFunction({name:'memberHome'}).then(function(response){
    if(seq!==page._seq)return;
    var result=response.result||{},m=result.member||{};
@@ -19,8 +19,27 @@ Page({
     wx.cloud.getTempFileURL({fileList:[m.avatarFileID]}).then(function(f){var file=f.fileList&&f.fileList[0];if(seq===page._seq&&file&&file.tempFileURL)page.setData({avatarSrc:file.tempFileURL});}).catch(function(){/* An unavailable avatar must not hide the member card. */});
    }
    page.loadStoreCheckInCount(seq);page.loadMyActivities(seq);page.loadChampions(seq);
-   wx.cloud.callFunction({name:'adminProfile'}).then(function(r){if(seq===page._seq)page.setData({isAdmin:!!(r.result&&['admin','superadmin'].indexOf(r.result.role)>=0)});}).catch(function(){if(seq===page._seq)page.setData({isAdmin:false});});
+   wx.cloud.callFunction({name:'adminProfile'}).then(function(r){if(seq!==page._seq)return;
+    const isAdmin=!!(r.result&&['admin','superadmin'].includes(r.result.role));
+    page.setData({isAdmin});
+    if(isAdmin)page.loadAdminCode();}).catch(function(){if(seq===page._seq)page.setData({isAdmin:false});});
   }).catch(function(){if(seq===page._seq)page.setData({loading:false,error:'个人资料暂未加载，请重试。',isAdmin:false});});
+ },
+ async loadAdminCode(){
+  const seq=this._seq;
+  this.setData({adminCode:'',adminCodeError:false});
+  try{
+   const envVersion=wx.getAccountInfoSync().miniProgram.envVersion;
+   const {result}=await wx.cloud.callFunction({name:'activityAttendance',data:{action:'storeCheckInCode',envVersion}});
+   if(seq!==this._seq)return;
+   if(!result||!result.image||!/^\d{4}-\d{2}-\d{2}$/.test(result.day))throw Error('CODE_UNAVAILABLE');
+   const file=wx.env.USER_DATA_PATH+'/redcircle-store-checkin-'+result.day+'.jpg';
+   wx.getFileSystemManager().writeFileSync(file,result.image,'base64');
+   this.setData({adminCode:file,adminCodeDay:result.day});
+   clearTimeout(this._codeTimer);
+   const expires=Date.parse(result.day+'T00:00:00+08:00')+86400000;
+   this._codeTimer=setTimeout(()=>this.loadAdminCode(),Math.max(1000,expires-Date.now()+1000));
+  }catch(e){if(seq===this._seq)this.setData({adminCodeError:true});}
  },
  loadStoreCheckInCount:function(seq){
   wx.cloud.callFunction({name:'activityAttendance',data:{action:'storeCheckInStatus'}}).then(r=>{
