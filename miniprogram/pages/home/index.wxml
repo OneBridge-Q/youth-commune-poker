@@ -10,9 +10,9 @@
  <view class="welcome-card welcome-row">
   <view wx:if="{{memberLoading}}" class="welcome-note">正在打开你的红圈空间…</view>
   <view wx:elif="{{memberError}}" class="welcome-row" bindtap="loadHome"><view class="welcome-note">{{memberError}}</view><text class="welcome-action">重试 ›</text></view>
-  <view wx:elif="{{registered}}" class="welcome-copy"><view class="welcome-name">{{nickname}}，欢迎回来</view><view class="welcome-note">已到现场？选择你参加的活动。</view></view>
-  <view wx:else class="welcome-copy"><view class="welcome-name">欢迎来到红圈</view><view class="welcome-note">现场到访可注册并签到。</view></view>
-  <button class="join-button" bindtap="goCheckIn">活动签到 ›</button>
+  <view wx:elif="{{registered}}" class="welcome-copy"><view class="welcome-name">{{nickname}}，欢迎回来</view><view class="welcome-note">到店后扫描门店签到码。</view></view>
+  <view wx:else class="welcome-copy"><view class="welcome-name">欢迎来到红圈</view><view class="welcome-note">首次到店可注册并签到。</view></view>
+  <button class="join-button" bindtap="goCheckIn">门店签到 ›</button>
  </view>
  <view class="section-head"><view><view class="eyebrow">WHAT'S NEXT</view><view class="section-title">近期活动</view></view><view class="text-link" bindtap="goActivities">全部活动 ›</view></view>
  <view wx:if="{{eventsLoading}}" class="empty-panel">正在寻找下一场相遇…</view>

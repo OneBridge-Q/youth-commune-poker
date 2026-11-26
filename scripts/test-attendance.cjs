@@ -21,6 +21,7 @@ function database(source){
    };},
    where(query){let n=100,order=[];return {
     orderBy(k,d){order=[k,d];return this;},limit(v){n=v;return this;},
+    async count(){return {total:items().filter(x=>matches(x,query)).length};},
     async get(){let a=items().filter(x=>matches(x,query));if(order.length)a=a.slice().sort((a,b)=>String(a[order[0]]).localeCompare(String(b[order[0]]))*(order[1]==='desc'?-1:1));return{data:clone(a.slice(0,n))};},
     async update({data}){const a=items().filter(x=>matches(x,query));a.forEach(x=>updateRow(x,data));return {stats:{updated:a.length}};}
    };},
@@ -31,11 +32,13 @@ function database(source){
 }
 function reset(){
  clock=TIME;ctx={OPENID:'admin-wx',APPID:'wxf108b994bb81e185'};failAudit=false;chain=Promise.resolve();
- tables={members:[{_id:'admin',_openid:'admin-wx',nickname:'管理员',role:'admin',storeId:'store-001',status:'active',skillPoints:5,rewardPoints:9},{_id:'a',_openid:'a-wx',nickname:'会员甲',storeId:'store-001',status:'active',skillPoints:8,rewardPoints:30},{_id:'b',_openid:'b-wx',nickname:'会员乙',storeId:'store-002',status:'active',skillPoints:3,rewardPoints:6}],member_identities:[],activities:[{_id:'event',title:'分享会',category:'知识分享',storeId:'store-001',status:'published',isTest:false,startDate:'2026-11-16',startTime:'13:00',startsAt:new Date('2026-11-16T13:00:00+08:00'),location:'店内'}],activity_signups:[],attendance_audit:[],hand_records:[],champion_awards:[]};
+ tables={members:[{_id:'admin',_openid:'admin-wx',nickname:'管理员',role:'admin',storeId:'store-001',status:'active',skillPoints:5,rewardPoints:9},{_id:'a',_openid:'a-wx',nickname:'会员甲',storeId:'store-001',status:'active',skillPoints:8,rewardPoints:30},{_id:'b',_openid:'b-wx',nickname:'会员乙',storeId:'store-002',status:'active',skillPoints:3,rewardPoints:6}],member_identities:[],store_checkins:[],activities:[{_id:'event',title:'分享会',category:'知识分享',storeId:'store-001',status:'published',isTest:false,startDate:'2026-11-16',startTime:'13:00',startsAt:new Date('2026-11-16T13:00:00+08:00'),location:'店内'}],activity_signups:[],attendance_audit:[],hand_records:[],champion_awards:[]};
  for(const m of ['a','b'])tables.activity_signups.push({_id:signupId('event',m),activityId:'event',memberId:m,nickname:m==='a'?'会员甲':'会员乙',status:'applied',createdAt:new Date(clock-86400000)});
  db=database(()=>tables);
  db.runTransaction=function(fn){const job=chain.then(async()=>{const snapshot=clone(tables);const result=await fn(database(()=>snapshot));tables=snapshot;return result;});chain=job.catch(()=>{});return job;};
- cloud={init(){},DYNAMIC_CURRENT_ENV:'test',database:()=>db,getWXContext:()=>ctx};
+ cloud={init(){},DYNAMIC_CURRENT_ENV:'test',database:()=>db,getWXContext:()=>ctx,
+  openapi:{wxacode:{getUnlimited:async options=>({buffer:Buffer.from(options.scene)})}}};
+
  run=createService(cloud,()=>clock);register=createRegistration(db,()=>clock);
 }
 const row=()=>tables.activity_signups.find(x=>x.memberId==='a');
@@ -47,43 +50,33 @@ async function growth(){
 }
 let passed=0;async function test(name,fn){reset();await fn();passed++;console.log('PASS '+name);}
 (async()=>{
- await test('external arrival stays pending until staff confirms, then counts once',async()=>{
-  tables.activity_signups=tables.activity_signups.filter(s=>s.memberId!=='a');
-  tables.activities[0].feeFen=9900;
-  tables.activities[0].capacity=1;
-  tables.activities[0].signupCount=1;
+ await test('store visits are independent of event registration and deduplicated across concurrent scans',async()=>{
+  tables.activities=[];tables.activity_signups=[];
+  const qr={action:'storeCheckInCode',envVersion:'trial'};
+  const code=await run(qr);
+  const token=Buffer.from(code.image,'base64').toString();
+  assert.match(token,/^[a-f0-9]{32}$/);
+  assert.equal((await run(qr)).image,code.image);
+  const check={action:'storeCheckIn',token};
+  ctx.OPENID='new-member';
+  assert.equal((await run({action:'storeCheckInStatus'})).registered,false);
+  await assert.rejects(run(check),/REGISTER_REQUIRED/);
   ctx.OPENID='a-wx';
-  assert.equal((await run({action:'arrivalList'})).activities[0].status,'available');
-  const request={action:'requestArrival',activityId:'event'};
-  assert.equal((await run(request)).status,'requested');
-  assert.equal((await run(request)).status,'requested');
-  assert.equal((await run({action:'arrivalList'})).activities[0].status,'requested');
-  assert.equal((await readParticipation(db,'a')).formalParticipated.length,0);
-  await assert.rejects(run(command()),/FORBIDDEN/);
+  await assert.rejects(run(qr),/FORBIDDEN/);
+  assert.equal((await run({action:'storeCheckInStatus'})).count,0);
+  const results=await Promise.all([run(check),run(check)]);
+  assert.deepEqual(results.map(result=>result.status).sort(),['already_checked_in','checked_in']);
+  assert.equal((await run({action:'storeCheckInStatus'})).count,1);
+  assert.equal(tables.activity_signups.length,0);
+
+  clock=Date.parse('2026-11-17T00:00:00+08:00');
+  await assert.rejects(run(check),/STORE_CODE_EXPIRED/);
   ctx.OPENID='admin-wx';
-  const roster=await run({action:'list',activityId:'event'});
-  assert.equal(roster.pendingArrivals,1);
-  assert.equal(roster.rows.find(s=>s.id===row()._id).walkInPending,true);
-  assert.equal((await run(command())).status,'checked_in');
-  assert.equal((await readParticipation(db,'a')).formalParticipated.length,1);
-  assert.equal(tables.activities[0].signupCount,1);
-  assert.equal((await run(command())).idempotent,true);
+  const next=await run(qr);
+  assert.notEqual(next.image,code.image);
   ctx.OPENID='a-wx';
-  assert.equal((await run({action:'arrivalList'})).activities[0].status,'checked_in');
- });
- await test('walk-in requests require registration and a current published formal activity',async()=>{
-  const request={action:'requestArrival',activityId:'event'};
-  ctx.OPENID='unregistered';
-  assert.equal((await run({action:'arrivalList'})).registered,false);
-  await assert.rejects(run(request),/REGISTER_REQUIRED/);
-  ctx.OPENID='a-wx';
-  assert.equal((await run(request)).status,'booked');
-  tables.activities[0].isTest=true;
-  await assert.rejects(run(request),/ARRIVAL_NOT_OPEN/);
-  tables.activities[0].isTest=false;
-  clock+=14*3600000;
-  assert.equal((await run({action:'arrivalList'})).activities.length,0);
-  await assert.rejects(run(request),/ARRIVAL_NOT_OPEN/);
+  assert.equal((await run({...check,token:Buffer.from(next.image,'base64').toString()})).status,'checked_in');
+  assert.equal((await run({action:'storeCheckInStatus'})).count,2);
  });
  await test('missing login rejected',async()=>{ctx.OPENID='';await assert.rejects(run({action:'list',activityId:'event'}),/UNAUTHENTICATED/);});
  await test('wrong app rejected',async()=>{ctx.APPID='wrong';await assert.rejects(run(command()),/APP_ID_MISMATCH/);});

@@ -1,6 +1,8 @@
 'use strict';
 const crypto=require('crypto');
 const {findMember,APP_ID}=require('./memberLookup');
+const {handleStoreCheckIn}=require('./storeCheckIn');
+const STORE_ACTIONS=['storeCheckInStatus','storeCheckInCode','storeCheckIn'];
 const PAGE=40;
 const MAX=1000;
 function id(v){return typeof v==='string'&&v.length>0&&v.length<=128;}
@@ -11,7 +13,6 @@ function start(a){const ms=new Date(a.startsAt||a.startDate+'T'+a.startTime+':00
 function stamp(d){if(!d)return '';const n=new Date(d).getTime();return Number.isFinite(n)?new Date(n+28800000).toISOString().slice(0,16).replace('T',' '):'';}
 function scope(m,a){if(!id(a.storeId))throw Error('ACTIVITY_STORE_REQUIRED');if(m.role!=='superadmin'&&a.storeId!==m.storeId)throw Error('WRONG_STORE');}
 function assertActor(m){if(!m||!['admin','superadmin'].includes(m.role)||(m.status&&m.status!=='active'))throw Error('FORBIDDEN');if(m.role!=='superadmin'&&!id(m.storeId))throw Error('FORBIDDEN');}
-function memberActive(member){return member&&(!member.status||member.status==='active');}
 function walkInOpen(activity,ms){
  const begins=start(activity);
  return activity.status==='published'&&Number.isFinite(begins)&&ms>=begins-7200000&&ms<begins+43200000;
@@ -31,55 +32,14 @@ function createService(cloud,clock){
  }
  return async function(event){
   event=event||{};
-  if(!['list','checkIn','revoke','history','arrivalList','requestArrival'].includes(event.action))throw Error('UNSUPPORTED_ACTION');
-  if(event.action!=='arrivalList'&&!id(event.activityId))throw Error('INVALID_ACTIVITY_ID');
+  const storeAction=STORE_ACTIONS.includes(event.action);
+  if(!storeAction&&!['list','checkIn','revoke','history'].includes(event.action))throw Error('UNSUPPORTED_ACTION');
+  if(!storeAction&&!id(event.activityId))throw Error('INVALID_ACTIVITY_ID');
   const ctx=cloud.getWXContext();
   if(!ctx.OPENID)throw Error('UNAUTHENTICATED');
   if(ctx.APPID&&ctx.APPID!==APP_ID)throw Error('APP_ID_MISMATCH');
   const actor=await findMember(db,ctx.OPENID);
-  if(event.action==='arrivalList'){
-   const ms=now(), dates=[ms-43200000,ms,ms+7200000].map(time=>stamp(time).slice(0,10));
-   const activities=[];
-   for(let cursor='';;){
-    const query={status:'published',startDate:db.command.in([...new Set(dates)])};
-    if(cursor)query._id=db.command.gt(cursor);
-    const result=await db.collection('activities').where(query).orderBy('_id','asc').limit(100).get();
-    activities.push(...result.data.filter(a=>walkInOpen(a,ms)&&a.isTest!==true&&id(a.storeId)));
-    if(result.data.length<100)break;
-    cursor=result.data[result.data.length-1]._id;
-   }
-   const rows=[];
-   for(const a of activities){
-    const s=memberActive(actor)?await get(db,'activity_signups','as_'+digest(a._id+':'+actor._id).slice(0,36)):null;
-    rows.push({id:a._id,title:a.title,location:a.location,startDate:a.startDate,startTime:a.startTime,
-     status:s&&state(s)==='checked_in'?'checked_in':s&&s.status==='walk_in_pending'?'requested':s&&s.status==='applied'?'booked':'available'});
-   }
-   rows.sort((a,b)=>(a.startDate+a.startTime).localeCompare(b.startDate+b.startTime));
-   return {registered:!!actor,activities:rows};
-  }
-  if(event.action==='requestArrival'){
-   if(!actor)throw Error('REGISTER_REQUIRED');
-   return db.runTransaction(async tx=>{
-    const m=await get(tx,'members',actor._id);
-    if(!memberActive(m))throw Error('MEMBER_NOT_ACTIVE');
-    const a=await get(tx,'activities',event.activityId),ms=now();
-    if(!a||!id(a.storeId)||a.isTest===true||!walkInOpen(a,ms))throw Error('ARRIVAL_NOT_OPEN');
-    const signupId='as_'+digest(a._id+':'+m._id).slice(0,36);
-    const ref=tx.collection('activity_signups').doc(signupId),s=(await ref.get()).data;
-    if(s&&(s.activityId!==a._id||s.memberId!==m._id))throw Error('SIGNUP_CONFLICT');
-    if(s&&state(s)==='checked_in')return {status:'checked_in'};
-    if(s&&s.status==='applied')return {status:'booked'};
-    if(s&&s.status==='walk_in_pending')return {status:'requested'};
-    const at=new Date(ms);
-    const data={status:'walk_in_pending',nickname:m.nickname||'会员',source:'onsite',capacityCounted:false,
-     title:a.title,category:a.category,startDate:a.startDate,startTime:a.startTime,location:a.location||'',
-     isTest:m.isTest===true,updatedAt:at};
-    await tx.collection('activities').doc(a._id).update({data:{attendanceRevision:db.command.inc(1)}});
-    if(s)await ref.update({data});
-    else await ref.set({data:{...data,activityId:a._id,memberId:m._id,createdAt:at}});
-    return {status:'requested'};
-   });
-  }
+  if(storeAction)return handleStoreCheckIn(db,cloud,actor,event,now);
   assertActor(actor);
   const activity=await get(db,'activities',event.activityId);
   if(!activity)throw Error('ACTIVITY_NOT_FOUND');scope(actor,activity);

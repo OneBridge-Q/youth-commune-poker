@@ -3,7 +3,10 @@ Page({
  data:{activityId:'',nickname:'',agreed:false,avatarPreview:'',avatarLocalPath:'',submitting:false,error:'',isEditing:false},
  async onLoad(options){
   if(options&&typeof options.activityId==='string'&&options.activityId.length<=128)this.setData({activityId:options.activityId});
-  if(options&&options.from==='check-in')this._returnToCheckIn=true;
+  if(options&&options.from==='check-in'){
+   this._returnToCheckIn=true;
+   this._checkInScene=/^[a-f0-9]{32}$/.test(options.scene||'')?'?scene='+options.scene:'';
+  }
   if(options&&options.mode==='edit'){
    this.setData({isEditing:true});
    try{
@@ -51,7 +54,7 @@ Page({
    wx.showToast({title:this.data.isEditing?'保存成功':'注册成功',icon:'success'});
    setTimeout(()=>{
     if(!this.data.isEditing&&this._returnToCheckIn){
-     wx.navigateBack({delta:1,fail:()=>wx.redirectTo({url:'/pages/check-in/index'})});
+     wx.navigateBack({delta:1,fail:()=>wx.redirectTo({url:'/pages/check-in/index'+this._checkInScene})});
      return;
     }
     if(!this.data.isEditing&&this.data.activityId){wx.navigateBack({delta:1,fail:()=>wx.redirectTo({url:'/pages/activity-detail/index?id='+encodeURIComponent(this.data.activityId)})});}else wx.switchTab({url:this.data.isEditing?'/pages/profile/index':'/pages/home/index'});},450);

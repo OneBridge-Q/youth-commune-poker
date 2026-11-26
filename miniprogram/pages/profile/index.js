@@ -18,15 +18,21 @@ Page({
    if(m.avatarFileID){
     wx.cloud.getTempFileURL({fileList:[m.avatarFileID]}).then(function(f){var file=f.fileList&&f.fileList[0];if(seq===page._seq&&file&&file.tempFileURL)page.setData({avatarSrc:file.tempFileURL});}).catch(function(){/* An unavailable avatar must not hide the member card. */});
    }
-   page.loadMyActivities(seq);page.loadChampions(seq);
+   page.loadStoreCheckInCount(seq);page.loadMyActivities(seq);page.loadChampions(seq);
    wx.cloud.callFunction({name:'adminProfile'}).then(function(r){if(seq===page._seq)page.setData({isAdmin:!!(r.result&&['admin','superadmin'].indexOf(r.result.role)>=0)});}).catch(function(){if(seq===page._seq)page.setData({isAdmin:false});});
   }).catch(function(){if(seq===page._seq)page.setData({loading:false,error:'个人资料暂未加载，请重试。',isAdmin:false});});
+ },
+ loadStoreCheckInCount:function(seq){
+  wx.cloud.callFunction({name:'activityAttendance',data:{action:'storeCheckInStatus'}}).then(r=>{
+   const count=r.result&&r.result.count;
+   if(seq===this._seq&&Number.isSafeInteger(count)&&count>=0)this.setData({charmDisplay:String(count)});
+  }).catch(()=>{});
  },
  loadMyActivities:function(seq){
   var page=this;page.setData({activitiesLoading:true,activitiesError:''});
   wx.cloud.callFunction({name:'activityMember',data:{action:'mine'}}).then(function(r){
    if(seq!==page._seq)return;var result=r.result||{},rows=result.applications||[];
-   page.setData({charmDisplay:Number.isInteger(result.formalAttended)&&result.formalAttended>=0?String(result.formalAttended):'—',recapLabels:result.recapLabels||[],myActivities:rows,activityPreview:page.data.showAllActivities?rows:rows.slice(0,3),activitiesLoading:false});
+   page.setData({recapLabels:result.recapLabels||[],myActivities:rows,activityPreview:page.data.showAllActivities?rows:rows.slice(0,3),activitiesLoading:false});
   }).catch(function(){if(seq===page._seq)page.setData({activitiesLoading:false,activitiesError:'报名记录加载失败'});});
  },
  loadChampions:function(seq,offset){

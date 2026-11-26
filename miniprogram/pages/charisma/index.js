@@ -7,16 +7,14 @@ Page({
   this._seq=seq;
   this.setData({loading:true,error:''});
   try{
-   const profile=await wx.cloud.callFunction({name:'memberHome'});
+   const {result}=await wx.cloud.callFunction({name:'activityAttendance',data:{action:'storeCheckInStatus'}});
    if(this._seq!==seq)return;
-   if(typeof profile.result?.registered!=='boolean')throw Error('INVALID_MEMBER_RESPONSE');
-   if(!profile.result.registered){
+   if(!result||typeof result.registered!=='boolean')throw Error('INVALID_MEMBER_RESPONSE');
+   if(!result.registered){
     this.setData({loading:false,registered:false});
     return;
    }
-   const response=await wx.cloud.callFunction({name:'activityMember',data:{action:'mine'}});
-   if(this._seq!==seq)return;
-   const attended=response.result?.formalAttended;
+   const attended=result.count;
    if(!Number.isInteger(attended)||attended<0)throw Error('ATTENDANCE_COUNT_UNAVAILABLE');
    this.setData({loading:false,registered:true,attended});
   }catch(e){

@@ -6,7 +6,7 @@
  </view>
  <view class="card">
   <view class="section-title">魅力值</view>
-  <view class="body-copy">等于累计有效签到的正式活动场次。每场签到计 1，同场只计一次，撤销签到后同步更新。</view>
+  <view class="body-copy">等于累计门店签到天数。到店扫描当日签到码，每位会员每天计 1 次。</view>
   <view class="body-copy">魅力值长期累计，仅用于记录到场次数，不可兑换。</view>
  </view>
 </template>

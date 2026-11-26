@@ -3,7 +3,7 @@
  <view wx:if="{{activity}}" class="muted">{{activity.startDate}} {{activity.startTime}}</view>
  <view wx:if="{{activity.isTest}}" class="test-label">测试活动：签到可联调，不计入正式参与次数或成长履历。</view>
  <view class="numbers"><view><text>{{stats.registered}}</text>已报名</view><view><text>{{stats.checkedIn}}</text>已签到</view><view><text>{{stats.notCheckedIn}}</text>未签到</view></view>
- <view class="muted">确认真实到场后，正式活动计入会员的累计签到次数。<text wx:if="{{pendingArrivals}}"> 当前有 {{pendingArrivals}} 条现场签到申请。</text></view>
+ <view class="muted">确认参加本场活动的会员。<text wx:if="{{pendingArrivals}}"> 当前有 {{pendingArrivals}} 条现场签到申请。</text></view>
 </view>
 <view class="card">
  <view class="search"><input placeholder="按会员昵称搜索" value="{{keyword}}" bindinput="onKeyword" maxlength="32"/><button size="mini" disabled="{{busy||loading}}" bindtap="search">搜索 / 刷新</button></view>
