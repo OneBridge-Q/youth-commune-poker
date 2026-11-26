@@ -51,7 +51,6 @@ Page({
  onAvatarError:function(){this.setData({avatarSrc:''});},
  openRegister:function(){wx.navigateTo({url:'/pages/register/index'});},
  editProfile:function(){wx.navigateTo({url:'/pages/register/index?mode=edit'});},
- openCharisma:function(){wx.navigateTo({url:'/pages/charisma/index'});},
  openGrowth:function(){wx.navigateTo({url:'/pages/growth/index'});},
  openActivities:function(){wx.navigateTo({url:'/pages/activities/index'});},
  openActivity:function(e){if(e.currentTarget.dataset.id)wx.navigateTo({url:'/pages/activity-detail/index?id='+encodeURIComponent(e.currentTarget.dataset.id)});},

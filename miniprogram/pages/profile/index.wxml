@@ -8,7 +8,22 @@
    <view wx:elif="{{error}}" class="identity-loading"><text>{{error}}</text><button class="light-button" bindtap="loadProfile">重新加载</button></view>
    <block wx:elif="{{registered}}">
     <view class="identity-main"><image wx:if="{{avatarSrc}}" class="profile-avatar" src="{{avatarSrc}}" mode="aspectFill" binderror="onAvatarError"/><view wx:else class="avatar-fallback">{{initial}}</view><view class="identity-text"><view class="profile-name">{{nickname}}</view><view class="profile-tagline">以兴趣相遇，以共创同行。</view></view><button class="edit-button" bindtap="editProfile">编辑资料 ›</button></view>
-    <view class="personal-scores"><view class="personal-score"><text class="score-label">我的战力值</text><text class="score-value">{{skillDisplay}}</text><text class="score-caption">长期累计 · 不按季清零</text></view><view class="score-divider"></view><view class="personal-score charm-score" bindtap="openCharisma"><text class="score-label">我的魅力值 <text class="score-arrow">›</text></text><text class="score-value">{{charmDisplay}}</text><text class="score-caption">累计有效签到 · 规则说明</text></view></view>
+    <view class="personal-scores">
+     <view class="personal-score">
+      <text class="score-label">我的战力值</text>
+      <text class="score-value">{{skillDisplay}}</text>
+      <text class="score-caption">长期累计 · 不按季清零</text>
+     </view>
+     <view class="score-divider"></view>
+     <view class="personal-score charm-score">
+      <text class="score-label">我的魅力值</text>
+      <text class="score-value">{{charmDisplay}}</text>
+      <text class="score-caption">累计有效签到</text>
+     </view>
+    </view>
+    <navigator class="score-rules-link" url="/pages/charisma/index" hover-class="score-rules-pressed">
+     <text>战力值与魅力值规则</text><text class="score-rules-chevron">›</text>
+    </navigator>
    </block>
    <view wx:else class="guest-block"><view class="guest-title">让每次相遇，留下成长。</view><view class="profile-tagline">创建个人档案，开始你的红圈旅程。</view><button class="light-button" bindtap="openRegister">加入红圈</button></view>
   </view>
