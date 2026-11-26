@@ -38,7 +38,9 @@ Page({
   var page=this,action=e.currentTarget.dataset.action,id=e.currentTarget.dataset.id;if(page.data.busy)return;
   var text=action==='publish'?'确认发布活动，让会员可以报名？':action==='markTest'?'确认仅用于联调？标记后不计正式成长，本入口不支持恢复成正式活动。':action==='openFeedback'?'确认活动已结束，并向已签到会员开放问卷？':'确认取消此活动？';
   wx.showModal({title:'活动操作',content:text,success:function(result){if(!result.confirm)return;page.setData({busy:true});
-   wx.cloud.callFunction({name:'activityAdmin',data:{action:action,id:id}}).then(function(){wx.showToast({title:'操作成功'});page.load();}).catch(function(err){console.error('[admin:activities]',err);wx.showToast({title:'操作失败',icon:'none'});}).then(function(){page.setData({busy:false});});
+   wx.cloud.callFunction({name:'activityAdmin',data:{action:action,id:id}}).then(function(){wx.showToast({title:'操作成功'});page.load();}).catch(function(err){console.error('[admin:activities]',err);if(String(err.errMsg||err.message||err).includes('REVOKE_PLACEMENTS_FIRST')){
+    wx.showModal({title:'请先撤销本场奖杯',content:'该活动已录入赛果，请在赛果与奖杯管理中撤销对应名次后重试。',showCancel:false});
+   }else wx.showToast({title:'操作失败',icon:'none'});}).then(function(){page.setData({busy:false});});
   }});
  },
  viewSignups:function(e){if(e.currentTarget.dataset.id)wx.navigateTo({url:'/pages/admin-attendance/index?id='+encodeURIComponent(e.currentTarget.dataset.id)+'&filter='+encodeURIComponent(e.currentTarget.dataset.filter||'all')});}

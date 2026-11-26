@@ -81,6 +81,9 @@ function createService(cloud,clock){
     if(!Number.isFinite(start(a))||now()<start(a)-7200000)throw Error('CHECKIN_NOT_OPEN');
     if(checked)return {id:s._id,status:'checked_in',version:version(s),unchanged:true};
    }else if(!checked){return {id:s._id,status:'not_checked_in',version:version(s),unchanged:true};}
+   if(event.action==='revoke'&&[a.firstPlacement,a.secondPlacement].some(p=>p&&p.memberId===s.memberId)){
+    throw Error('REVOKE_PLACEMENTS_FIRST');
+   }
    const v=version(s)+1,at=new Date(now()),isTest=a.isTest===true||s.isTest===true||old.isTest===true;
    const next={status:event.action==='checkIn'?'checked_in':'revoked',version:v,isTest:isTest,requestId:event.requestId,signature:signature,
     checkedInAt:event.action==='checkIn'?at:old.checkedInAt||null,checkedInBy:event.action==='checkIn'?actor._id:old.checkedInBy||'',

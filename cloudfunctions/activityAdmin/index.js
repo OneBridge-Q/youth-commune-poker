@@ -2,7 +2,7 @@
 const {findMember,APP_ID}=require('./memberLookup');
 const cloud=require('wx-server-sdk');
 cloud.init({env:cloud.DYNAMIC_CURRENT_ENV});
-const db=cloud.database();
+const db=cloud.database({throwOnNotFound:false});
 const CATEGORIES=new Set(['主题社交','社交交流','德州活动','知识分享','户外运动','创业共创','其他']);
 const PRODUCT_CATEGORY={"poker":"德州活动","outdoor":"户外运动","hardware":"知识分享","psychology":"知识分享","pitch":"创业共创","mvp":"创业共创"};
 const plain=(s,max)=>typeof s==='string'&&s.trim().length>0&&s.trim().length<=max;
@@ -82,14 +82,23 @@ exports.main=async function(event){
  if(action==='publish'||action==='cancel'||action==='markTest'){
   const item=await getEvent(event.id);
   if(actor.role!=='superadmin'&&item.storeId!==actor.storeId)throw Error('WRONG_STORE');
-  if(action==='markTest'){
-   // One-way classification is conservative: a test must never silently become real.
-   await db.collection('activities').doc(item._id).update({data:{isTest:true,testMarkedBy:actor._id,testMarkedAt:db.serverDate(),updatedAt:db.serverDate()}});
-   return {id:item._id,isTest:true};
+  if(action!=='publish'){
+   return db.runTransaction(async tx=>{
+    const ref=tx.collection('activities').doc(item._id);
+    const live=(await ref.get()).data;
+    if(!live)throw Error('EVENT_NOT_FOUND');
+    if(live.firstPlacement||live.secondPlacement)throw Error('REVOKE_PLACEMENTS_FIRST');
+    if(action==='markTest'){
+     await ref.update({data:{isTest:true,testMarkedBy:actor._id,testMarkedAt:db.serverDate(),updatedAt:db.serverDate()}});
+     return {id:item._id,isTest:true};
+    }
+    if(!['draft','published'].includes(live.status))throw Error('INVALID_TRANSITION');
+    await ref.update({data:{status:'cancelled',updatedAt:db.serverDate()}});
+    return {id:item._id,status:'cancelled'};
+   });
   }
   if(action==='publish'&&(item.status!=='draft'||new Date(item.startsAt).getTime()<=Date.now()))throw Error('INVALID_TRANSITION');
-  if(action==='cancel'&&!['draft','published'].includes(item.status))throw Error('INVALID_TRANSITION');
-  const next=action==='publish'?'published':'cancelled';
+  const next='published';
   const done=await db.collection('activities').where({_id:item._id,status:item.status}).update({data:{status:next,updatedAt:db.serverDate()}});
   if(!done.stats.updated)throw Error('CONCURRENT_UPDATE');
   return {id:item._id,status:next};

@@ -21,15 +21,17 @@ Page({
  },
  draw(item){
   const ctx=wx.createCanvasContext('momentPoster',this);
-  const navy='#142238',gold='#D9BC80',white='#FFF9EE';
+  const placeTitle=item.place===2?'亚军':'冠军';
+  const competitionTitle={sng:'单场SNG',weekly:'周赛',monthly:'月赛'}[item.competitionType];
+  const navy='#142238',gold=item.place===2?'#C7D3E3':'#D9BC80',white='#FFF9EE';
   ctx.setFillStyle(navy);ctx.fillRect(0,0,320,480);
   ctx.setStrokeStyle(gold);ctx.setLineWidth(1);ctx.strokeRect(15,15,290,450);
-  ctx.setTextAlign('center');ctx.setFillStyle(gold);ctx.setFontSize(12);ctx.fillText('YOUTH COMMUNE · POKER CLUB',160,49);
-  ctx.setFillStyle(white);ctx.setFontSize(29);ctx.fillText(item.type==='champion'?'CHAMPION':'POKER MOMENT',160,111);
-  ctx.setFillStyle(gold);ctx.setFontSize(24);ctx.fillText(item.type==='champion'?'冠军荣誉':labels[item.category]||'精彩手牌',160,158);
+  ctx.setTextAlign('center');ctx.setFillStyle(gold);ctx.setFontSize(12);ctx.fillText('RED CIRCLE CLUB',160,49);
+  ctx.setFillStyle(white);ctx.setFontSize(29);ctx.fillText(item.type==='champion'?(item.place===2?'RUNNER-UP':'CHAMPION'):'POKER MOMENT',160,111);
+  ctx.setFillStyle(gold);ctx.setFontSize(24);ctx.fillText(item.type==='champion'?(competitionTitle?competitionTitle+placeTitle+'奖杯':placeTitle+'荣誉'):labels[item.category]||'精彩手牌',160,158);
   if(item.type==='champion'){
    ctx.setFillStyle(gold);ctx.setFontSize(46);ctx.fillText('★',160,228);
-   ctx.setFillStyle(white);ctx.setFontSize(15);ctx.fillText(String(item.title||'策略挑战活动冠军').slice(0,19),160,273);
+   ctx.setFillStyle(white);ctx.setFontSize(15);ctx.fillText(String(item.title||'策略挑战活动').slice(0,19),160,273);
   }else{
    const cards=designs[item.category]||[['A','♠'],['K','♥'],['Q','♦'],['J','♣'],['9','♠']];
    cards.forEach(([rank,suit],i)=>{

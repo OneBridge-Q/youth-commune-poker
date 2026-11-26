@@ -29,12 +29,19 @@ Page({
    page.setData({recapLabels:(r.result&&r.result.recapLabels)||[],myActivities:rows,activityPreview:page.data.showAllActivities?rows:rows.slice(0,3),activitiesLoading:false});
   }).catch(function(){if(seq===page._seq)page.setData({activitiesLoading:false,activitiesError:'报名记录加载失败'});});
  },
- loadChampions:function(seq){
-  var page=this;page.setData({championsLoading:true,championsError:''});
-  wx.cloud.callFunction({name:'championAdmin',data:{action:'mine'}}).then(function(r){
-   if(seq!==page._seq)return;var rows=(r.result&&r.result.records)||[];
-   page.setData({champions:rows,championPreview:page.data.showAllChampions?rows:rows.slice(0,3),championsLoading:false});
+ loadChampions:function(seq,offset){
+  var page=this;
+  if(offset&&page.data.championsLoading)return;
+  page.setData({championsLoading:true,championsError:''});
+  wx.cloud.callFunction({name:'championAdmin',data:{action:'mine',offset:offset||0}}).then(function(r){
+   if(seq!==page._seq)return;
+   var result=r.result||{},rows=(offset?page.data.champions:[]).concat(result.records||[]);
+   page.setData({champions:rows,championPreview:page.data.showAllChampions?rows:rows.slice(0,3),
+    championNextOffset:result.nextOffset||0,championsLoading:false});
   }).catch(function(){if(seq===page._seq)page.setData({championsLoading:false,championsError:'荣誉记录加载失败'});});
+ },
+ loadMoreChampions:function(){
+  if(this.data.championNextOffset)this.loadChampions(this._seq,this.data.championNextOffset);
  },
  retryActivities:function(){this.loadMyActivities(this._seq);},
  retryChampions:function(){this.loadChampions(this._seq);},

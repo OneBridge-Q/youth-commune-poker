@@ -16,8 +16,8 @@
  <block wx:if="{{registered&&!loading&&!error}}">
   <view wx:if="{{isAdmin}}" class="section-card admin-card">
    <view class="section-heading" bindtap="toggleAdmin"><view><view class="section-kicker">OPERATIONS</view><view class="section-name">管理工作台</view></view><text class="section-link">{{adminExpanded?'收起 ⌃':'展开 ⌄'}}</text></view>
-   <view wx:if="{{!adminExpanded}}" class="admin-summary">活动运营、回顾、精彩手牌与冠军认证</view>
-   <view wx:else class="admin-grid"><view bindtap="openActivityAdmin">活动管理 <text>›</text></view><view bindtap="openActivityCreate">创建活动 <text>›</text></view><view bindtap="openRecapAdmin">活动回顾 <text>›</text></view><view bindtap="openAdmin">精彩手牌管理 <text>›</text></view><view bindtap="openChampionAdmin">冠军证书管理 <text>›</text></view></view>
+   <view wx:if="{{!adminExpanded}}" class="admin-summary">活动运营、回顾、精彩手牌与赛果录入</view>
+   <view wx:else class="admin-grid"><view bindtap="openActivityAdmin">活动管理 <text>›</text></view><view bindtap="openActivityCreate">创建活动 <text>›</text></view><view bindtap="openRecapAdmin">活动回顾 <text>›</text></view><view bindtap="openAdmin">精彩手牌管理 <text>›</text></view><view bindtap="openChampionAdmin">赛果与奖杯管理 <text>›</text></view></view>
   </view>
   <view class="shortcut-grid"><view class="shortcut" bindtap="openGrowth"><view class="shortcut-icon">迹</view><view class="shortcut-title">成长履历 <text>↗</text></view><view class="shortcut-note">回看你的参与和收获</view></view><view class="shortcut" bindtap="openHighlights"><view class="shortcut-icon secondary">荣</view><view class="shortcut-title">精彩手牌 <text>↗</text></view><view class="shortcut-note">记录值得分享的时刻</view></view></view>
   <navigator url="/pages/member-recaps/index" class="section-card"><view class="section-name">我的季度与年度回顾 ›</view><view class="shortcut-note"><block wx:if="{{recapLabels.length}}">已生成回顾：{{recapLabels[0]}}{{recapLabels.length>1?' · '+recapLabels[1]:''}}</block><block wx:else>回看参加的活动、玩法评价和精彩手牌</block></view></navigator>
@@ -29,10 +29,10 @@
    <block wx:else><view wx:for="{{activityPreview}}" wx:key="activityId" class="detail-row" data-id="{{item.activityId}}" bindtap="openActivity"><view class="row-mark"></view><view class="row-content"><view class="row-title">{{item.title}} {{item.isTest?'[测试]':''}}</view><view class="row-subtitle">{{item.startDate}} · {{item.startTime}}</view></view><text class="row-chevron">›</text></view><view wx:if="{{!myActivities.length}}" class="section-state">暂无待签到的报名，去发现一次新的相遇。</view><view wx:if="{{myActivities.length>3}}" class="expand-link" bindtap="toggleActivities">{{showAllActivities?'收起':'查看全部报名'}} {{showAllActivities?'⌃':'⌄'}}</view></block>
   </view>
   <view class="section-card">
-   <view class="section-heading"><view><view class="section-kicker">MY HONORS</view><view class="section-name">我的冠军荣誉</view></view><text wx:if="{{!championsLoading && !championsError && champions.length}}" class="section-tag">已认证</text></view>
+   <view class="section-heading"><view><view class="section-kicker">MY HONORS</view><view class="section-name">我的奖励墙</view></view><text wx:if="{{!championsLoading && !championsError && champions.length}}" class="section-tag">已认证</text></view>
    <view wx:if="{{championsLoading}}" class="section-state">荣誉记录加载中…</view>
    <view wx:elif="{{championsError}}" class="section-state error-state" bindtap="retryChampions">{{championsError}}，点击重试</view>
-   <block wx:else><view wx:for="{{championPreview}}" wx:key="id" class="detail-row" data-id="{{item.id}}" bindtap="openChampion"><view class="honor-star">✦</view><view class="row-content"><view class="row-title">{{item.eventName}}</view><view class="row-subtitle">查看专属荣誉证书</view></view><text class="row-chevron">›</text></view><view wx:if="{{!champions.length}}" class="section-state">属于你的荣誉时刻，值得慢慢积累。</view><view wx:if="{{champions.length>3}}" class="expand-link" bindtap="toggleChampions">{{showAllChampions?'收起':'查看全部荣誉'}} {{showAllChampions?'⌃':'⌄'}}</view></block>
+   <block wx:else><view wx:for="{{championPreview}}" wx:key="id" class="detail-row" data-id="{{item.id}}" bindtap="openChampion"><view class="honor-star {{item.place===2?'honor-silver':''}}">🏆</view><view class="row-content"><view class="row-title">{{item.trophy||'冠军荣誉'}}</view><view class="row-subtitle">{{item.eventName}}{{item.date?' · '+item.date:''}}</view></view><text class="row-chevron">›</text></view><view wx:if="{{!champions.length}}" class="section-state">获得的比赛奖杯会显示在这里。</view><view wx:if="{{champions.length>3||championNextOffset}}" class="expand-link" bindtap="toggleChampions">{{showAllChampions?'收起':'展开荣誉'}} {{showAllChampions?'⌃':'⌄'}}</view><view wx:if="{{showAllChampions&&championNextOffset}}" class="expand-link" bindtap="loadMoreChampions">加载更多奖杯</view></block>
   </view>
 
  </block>
