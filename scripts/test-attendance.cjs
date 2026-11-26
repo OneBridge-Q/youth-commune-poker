@@ -47,6 +47,44 @@ async function growth(){
 }
 let passed=0;async function test(name,fn){reset();await fn();passed++;console.log('PASS '+name);}
 (async()=>{
+ await test('external arrival stays pending until staff confirms, then counts once',async()=>{
+  tables.activity_signups=tables.activity_signups.filter(s=>s.memberId!=='a');
+  tables.activities[0].feeFen=9900;
+  tables.activities[0].capacity=1;
+  tables.activities[0].signupCount=1;
+  ctx.OPENID='a-wx';
+  assert.equal((await run({action:'arrivalList'})).activities[0].status,'available');
+  const request={action:'requestArrival',activityId:'event'};
+  assert.equal((await run(request)).status,'requested');
+  assert.equal((await run(request)).status,'requested');
+  assert.equal((await run({action:'arrivalList'})).activities[0].status,'requested');
+  assert.equal((await readParticipation(db,'a')).formalParticipated.length,0);
+  await assert.rejects(run(command()),/FORBIDDEN/);
+  ctx.OPENID='admin-wx';
+  const roster=await run({action:'list',activityId:'event'});
+  assert.equal(roster.pendingArrivals,1);
+  assert.equal(roster.rows.find(s=>s.id===row()._id).walkInPending,true);
+  assert.equal((await run(command())).status,'checked_in');
+  assert.equal((await readParticipation(db,'a')).formalParticipated.length,1);
+  assert.equal(tables.activities[0].signupCount,1);
+  assert.equal((await run(command())).idempotent,true);
+  ctx.OPENID='a-wx';
+  assert.equal((await run({action:'arrivalList'})).activities[0].status,'checked_in');
+ });
+ await test('walk-in requests require registration and a current published formal activity',async()=>{
+  const request={action:'requestArrival',activityId:'event'};
+  ctx.OPENID='unregistered';
+  assert.equal((await run({action:'arrivalList'})).registered,false);
+  await assert.rejects(run(request),/REGISTER_REQUIRED/);
+  ctx.OPENID='a-wx';
+  assert.equal((await run(request)).status,'booked');
+  tables.activities[0].isTest=true;
+  await assert.rejects(run(request),/ARRIVAL_NOT_OPEN/);
+  tables.activities[0].isTest=false;
+  clock+=14*3600000;
+  assert.equal((await run({action:'arrivalList'})).activities.length,0);
+  await assert.rejects(run(request),/ARRIVAL_NOT_OPEN/);
+ });
  await test('missing login rejected',async()=>{ctx.OPENID='';await assert.rejects(run({action:'list',activityId:'event'}),/UNAUTHENTICATED/);});
  await test('wrong app rejected',async()=>{ctx.APPID='wrong';await assert.rejects(run(command()),/APP_ID_MISMATCH/);});
  await test('ordinary members cannot view or sign',async()=>{ctx.OPENID='a-wx';await assert.rejects(run(command()),/FORBIDDEN/);await assert.rejects(run({action:'list',activityId:'event'}),/FORBIDDEN/);});

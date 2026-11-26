@@ -1,0 +1,18 @@
+<view class="card">
+ <view class="heading">活动签到</view>
+ <view class="muted">到场后选择活动。通过美团、大众点评报名的客人，也可以在这里提交签到申请。</view>
+ <button wx:if="{{!loading&&!error&&!registered}}" type="primary" bindtap="register">注册会员后签到</button>
+</view>
+<view wx:if="{{loading}}" class="card muted">正在查找可签到的活动…</view>
+<view wx:elif="{{error}}" class="card"><view>{{error}}</view><button size="mini" bindtap="load">重试</button></view>
+<block wx:else>
+ <view wx:if="{{!activities.length}}" class="card muted">暂无开放签到的活动。签到在活动开始前两小时开放。</view>
+ <view wx:for="{{activities}}" wx:key="id" class="card">
+  <view class="event-name">{{item.title}}</view>
+  <view class="muted">{{item.startDate}} {{item.startTime}} · {{item.location}}</view>
+  <view wx:if="{{item.status==='checked_in'}}" class="status">已签到</view>
+  <view wx:elif="{{item.status==='booked'}}" class="status">已报名，请找工作人员签到。</view>
+  <view wx:elif="{{item.status==='requested'}}" class="status">已提交，请找工作人员确认到场。<button size="mini" bindtap="load">刷新状态</button></view>
+  <button wx:else type="primary" data-id="{{item.id}}" bindtap="requestArrival" loading="{{submitting===item.id}}" disabled="{{!!submitting}}">{{registered?'提交签到申请':'注册后签到'}}</button>
+ </view>
+</block>

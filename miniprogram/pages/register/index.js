@@ -3,6 +3,7 @@ Page({
  data:{activityId:'',nickname:'',agreed:false,avatarPreview:'',avatarLocalPath:'',submitting:false,error:'',isEditing:false},
  async onLoad(options){
   if(options&&typeof options.activityId==='string'&&options.activityId.length<=128)this.setData({activityId:options.activityId});
+  if(options&&options.from==='check-in')this._returnToCheckIn=true;
   if(options&&options.mode==='edit'){
    this.setData({isEditing:true});
    try{
@@ -48,7 +49,12 @@ Page({
     if(!res.result||!res.result.updated)throw Error('PROFILE_UPDATE_FAILED');
    }else if(!res.result||!res.result.registered)throw Error('REGISTER_NO_RESULT');
    wx.showToast({title:this.data.isEditing?'保存成功':'注册成功',icon:'success'});
-   setTimeout(()=>{if(!this.data.isEditing&&this.data.activityId){wx.navigateBack({delta:1,fail:()=>wx.redirectTo({url:'/pages/activity-detail/index?id='+encodeURIComponent(this.data.activityId)})});}else wx.switchTab({url:this.data.isEditing?'/pages/profile/index':'/pages/home/index'});},450);
+   setTimeout(()=>{
+    if(!this.data.isEditing&&this._returnToCheckIn){
+     wx.navigateBack({delta:1,fail:()=>wx.redirectTo({url:'/pages/check-in/index'})});
+     return;
+    }
+    if(!this.data.isEditing&&this.data.activityId){wx.navigateBack({delta:1,fail:()=>wx.redirectTo({url:'/pages/activity-detail/index?id='+encodeURIComponent(this.data.activityId)})});}else wx.switchTab({url:this.data.isEditing?'/pages/profile/index':'/pages/home/index'});},450);
   }catch(e){
    console.error('[memberRegister:profile]',e);
    const msg=String((e&&(e.errMsg||e.message))||e);

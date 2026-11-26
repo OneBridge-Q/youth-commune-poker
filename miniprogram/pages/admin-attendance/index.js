@@ -1,12 +1,12 @@
 function hint(e){
  var t=String((e&&(e.errMsg||e.message))||e||'');
- var labels={REVOKE_PLACEMENTS_FIRST:'请先在赛果管理撤销该会员的奖杯，再撤销签到。',WRONG_STORE:'只能管理本门店的活动。',FORBIDDEN:'当前账号没有签到管理权限。',APP_ID_MISMATCH:'小程序身份配置不匹配。',ATTENDANCE_CHANGED:'名单状态已变化，请刷新后重新确认。',SIGNUP_CANCELLED:'该会员已取消报名，请刷新名单。',SIGNUP_NOT_FOUND:'报名记录不存在，请刷新名单。',ACTIVITY_NOT_AVAILABLE:'活动未发布或已取消，不能新增签到。',CHECKIN_NOT_OPEN:'签到在活动开始前2小时开放。',MEMBER_NOT_ACTIVE:'该会员已停用，不能签到。',REVOKE_REASON_REQUIRED:'请填写2至200个字符的撤销原因。',ROSTER_LIMIT_REACHED:'报名超过1000条，请联系管理员升级名单查询。',IDEMPOTENCY_CONFLICT:'操作请求不一致，请刷新后重试。',FUNCTION_NOT_FOUND:'请先部署 activityAttendance 云函数。'};
+ var labels={ARRIVAL_NOT_OPEN:'该活动的现场签到时段已结束。',REVOKE_PLACEMENTS_FIRST:'请先在赛果管理撤销该会员的奖杯，再撤销签到。',WRONG_STORE:'只能管理本门店的活动。',FORBIDDEN:'当前账号没有签到管理权限。',APP_ID_MISMATCH:'小程序身份配置不匹配。',ATTENDANCE_CHANGED:'名单状态已变化，请刷新后重新确认。',SIGNUP_CANCELLED:'该会员已取消报名，请刷新名单。',SIGNUP_NOT_FOUND:'报名记录不存在，请刷新名单。',ACTIVITY_NOT_AVAILABLE:'活动未发布或已取消，不能新增签到。',CHECKIN_NOT_OPEN:'签到在活动开始前2小时开放。',MEMBER_NOT_ACTIVE:'该会员已停用，不能签到。',REVOKE_REASON_REQUIRED:'请填写2至200个字符的撤销原因。',ROSTER_LIMIT_REACHED:'报名超过1000条，请联系管理员升级名单查询。',IDEMPOTENCY_CONFLICT:'操作请求不一致，请刷新后重试。',FUNCTION_NOT_FOUND:'请先部署 activityAttendance 云函数。'};
  var keys=Object.keys(labels);for(var i=0;i<keys.length;i++)if(t.indexOf(keys[i])>=0)return labels[keys[i]];
  if(/collection.*(not exist|not found)|table not exist|COLLECTION_NOT_EXIST/i.test(t))return '缺少签到审计集合，请创建 attendance_audit 后重试。';
  return '操作未确认成功，请刷新名单后重试。系统不会重复计次。';
 }
 Page({
- data:{id:'',activity:null,stats:{registered:0,checkedIn:0,notCheckedIn:0},rows:[],keyword:'',filter:'all',nextOffset:null,loading:false,busy:false,error:'',canCheckIn:false,revokeTarget:null,reason:''},
+ data:{id:'',activity:null,pendingArrivals:0,stats:{registered:0,checkedIn:0,notCheckedIn:0},rows:[],keyword:'',filter:'all',nextOffset:null,loading:false,busy:false,error:'',canCheckIn:false,revokeTarget:null,reason:''},
  onLoad:function(o){this.setData({id:o.id||'',filter:['all','checked_in','not_checked_in'].indexOf(o.filter)>=0?o.filter:'all'});},
  onShow:function(){if(this.data.id)this.load(false);},
  onHide:function(){this._seq=(this._seq||0)+1;},
@@ -21,7 +21,7 @@ Page({
   wx.cloud.callFunction({name:'activityAttendance',data:{action:'list',activityId:page.data.id,keyword:page.data.keyword,filter:page.data.filter,offset:append?page.data.nextOffset:0}}).then(function(r){
    if(seq!==page._seq)return;var v=r.result||{};
    if(!v.activity||!Array.isArray(v.rows))throw Error('INVALID_RESPONSE');
-   page.setData({loading:false,activity:v.activity,stats:v.stats,rows:append?page.data.rows.concat(v.rows):v.rows,nextOffset:v.nextOffset===undefined?null:v.nextOffset,canCheckIn:!!v.canCheckIn});
+   page.setData({loading:false,activity:v.activity,stats:v.stats,pendingArrivals:v.pendingArrivals||0,rows:append?page.data.rows.concat(v.rows):v.rows,nextOffset:v.nextOffset===undefined?null:v.nextOffset,canCheckIn:!!v.canCheckIn});
   }).catch(function(e){if(seq===page._seq)page.setData({loading:false,error:hint(e)});});
  },
  checkIn:function(e){

@@ -1,0 +1,3 @@
+.event-name { color: #292421; font-size: 32rpx; font-weight: 700; margin-bottom: 12rpx; }
+.status { color: #80522f; margin-top: 22rpx; font-size: 26rpx; }
+button { margin-top: 24rpx; }

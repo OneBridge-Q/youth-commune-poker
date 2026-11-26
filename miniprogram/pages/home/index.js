@@ -28,7 +28,6 @@ Page({
  previewRecap:function(e){var r=this.data.recaps[Number(e.currentTarget.dataset.index)],i=Number(e.currentTarget.dataset.photo);if(r&&r.photos&&r.photos.length)wx.previewImage({urls:r.photos,current:r.photos[i]||r.photos[0]});},
  onCoverError:function(e){var i=Number(e.currentTarget.dataset.index);if(Number.isInteger(i)&&this.data.events[i]){var patch={};patch['events['+i+'].posterSrc']='';this.setData(patch);}},
  goActivities:function(){wx.navigateTo({url:'/pages/activities/index'});},
- goRegister:function(){wx.navigateTo({url:'/pages/register/index'});},
- goMine:function(){wx.switchTab({url:'/pages/profile/index'});},
+ goCheckIn:function(){wx.navigateTo({url:'/pages/check-in/index'});},
  onShareAppMessage:function(){return {title:'红圈青年｜智力竞技 · 兴趣社交 · 青年共创',path:'/pages/home/index'};}
 });
