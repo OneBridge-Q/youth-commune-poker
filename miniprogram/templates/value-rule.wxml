@@ -1,7 +1,12 @@
 <template name="value-rule">
- <view style="margin:24rpx;padding:26rpx;border:2rpx solid #C63135;border-left:10rpx solid #C63135;border-radius:18rpx;background:#FFF1F0;color:#74282B;">
-  <view style="font-size:29rpx;font-weight:700;line-height:1.6;">重要规则｜筹码、战力值、魅力值严禁互换</view>
-  <view style="font-size:26rpx;line-height:1.85;margin-top:12rpx;">魅力值不得通过德州筹码（店内“积分”）、牌局或比赛输赢、战力值转换或联动奖励获得。筹码和战力值不能用于兑换礼物、门票或权益。</view>
-  <view style="font-size:24rpx;line-height:1.7;margin-top:12rpx;">魅力值仅按独立的社区贡献规则发放；可兑换内容与条件以正式公布的权益规则为准。</view>
+ <view class="card">
+  <view class="section-title">战力值</view>
+  <view class="body-copy">记录 SNG 成绩。管理员录入赛果后，冠军加 3 分，亚军加 1 分，并发放相应奖杯。</view>
+  <view class="body-copy">战力值长期累计，用于本店战力总榜。</view>
+ </view>
+ <view class="card">
+  <view class="section-title">魅力值</view>
+  <view class="body-copy">等于累计有效签到的正式活动场次。每场签到计 1，同场只计一次，撤销签到后同步更新。</view>
+  <view class="body-copy">魅力值长期累计，仅用于记录到场次数，不可兑换。</view>
  </view>
 </template>

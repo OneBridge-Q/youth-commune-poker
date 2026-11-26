@@ -13,7 +13,7 @@ Page({
    var result=response.result||{},m=result.member||{};
    if(typeof result.registered!=='boolean')throw Error('INVALID_MEMBER_RESPONSE');
    var name=m.nickname||'红圈会员';
-   page.setData({loading:false,registered:result.registered,nickname:name,initial:Array.from(name)[0]||'圈',skillDisplay:displayScore(m.skillPoints),charmDisplay:displayScore(m.rewardPoints)});
+   page.setData({loading:false,registered:result.registered,nickname:name,initial:Array.from(name)[0]||'圈',skillDisplay:displayScore(m.skillPoints)});
    if(!result.registered)return;
    if(m.avatarFileID){
     wx.cloud.getTempFileURL({fileList:[m.avatarFileID]}).then(function(f){var file=f.fileList&&f.fileList[0];if(seq===page._seq&&file&&file.tempFileURL)page.setData({avatarSrc:file.tempFileURL});}).catch(function(){/* An unavailable avatar must not hide the member card. */});
@@ -25,8 +25,8 @@ Page({
  loadMyActivities:function(seq){
   var page=this;page.setData({activitiesLoading:true,activitiesError:''});
   wx.cloud.callFunction({name:'activityMember',data:{action:'mine'}}).then(function(r){
-   if(seq!==page._seq)return;var rows=(r.result&&r.result.applications)||[];
-   page.setData({recapLabels:(r.result&&r.result.recapLabels)||[],myActivities:rows,activityPreview:page.data.showAllActivities?rows:rows.slice(0,3),activitiesLoading:false});
+   if(seq!==page._seq)return;var result=r.result||{},rows=result.applications||[];
+   page.setData({charmDisplay:Number.isInteger(result.formalAttended)&&result.formalAttended>=0?String(result.formalAttended):'—',recapLabels:result.recapLabels||[],myActivities:rows,activityPreview:page.data.showAllActivities?rows:rows.slice(0,3),activitiesLoading:false});
   }).catch(function(){if(seq===page._seq)page.setData({activitiesLoading:false,activitiesError:'报名记录加载失败'});});
  },
  loadChampions:function(seq,offset){
