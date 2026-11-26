@@ -3,7 +3,8 @@ Page({
  data:{activityId:'',nickname:'',agreed:false,avatarPreview:'',avatarLocalPath:'',submitting:false,error:'',isEditing:false},
  async onLoad(options){
   if(options&&typeof options.activityId==='string'&&options.activityId.length<=128)this.setData({activityId:options.activityId});
-  if(options&&options.from==='check-in'){
+  if(options&&['check-in','home-check-in'].includes(options.from)){
+   this._checkInFromHome=options.from==='home-check-in';
    this._returnToCheckIn=true;
    this._checkInScene=/^[a-f0-9]{32}$/.test(options.scene||'')?'?scene='+options.scene:'';
   }
@@ -51,6 +52,19 @@ Page({
    if(this.data.isEditing){
     if(!res.result||!res.result.updated)throw Error('PROFILE_UPDATE_FAILED');
    }else if(!res.result||!res.result.registered)throw Error('REGISTER_NO_RESULT');
+   if(!this.data.isEditing&&this._checkInFromHome&&this._checkInScene){
+    try{
+     const token=this._checkInScene.slice(7);
+     const {result}=await wx.cloud.callFunction({name:'activityAttendance',data:{action:'storeCheckIn',token}});
+     if(!result||!['checked_in','already_checked_in'].includes(result.status))throw Error('CHECK_IN_FAILED');
+     wx.showToast({title:result.status==='checked_in'?'注册并签到成功':'注册成功，今天已签到',icon:'none'});
+    }catch(e){
+     const error=String(e.errMsg||e.message||e);
+     wx.showToast({title:error.includes('STORE_CODE_EXPIRED')?'已注册，请扫当天的新码':'已注册，请重新扫码签到',icon:'none'});
+    }
+    wx.navigateBack({delta:1,fail:()=>wx.switchTab({url:'/pages/home/index'})});
+    return;
+   }
    wx.showToast({title:this.data.isEditing?'保存成功':'注册成功',icon:'success'});
    setTimeout(()=>{
     if(!this.data.isEditing&&this._returnToCheckIn){
