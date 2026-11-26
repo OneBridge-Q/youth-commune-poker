@@ -8,7 +8,9 @@ Page({
  loadHome:function(){
   var page=this,seq=(page._loadSeq||0)+1;page._loadSeq=seq;
   page.setData({memberLoading:true,memberError:'',eventsLoading:true,eventsError:'',recapsLoading:true,recapsError:''});
-  wx.cloud.callFunction({name:'memberHome'}).then(function(r){
+  if(wx.getStorageSync('redcircle:signed-out')){
+   page.setData({memberLoading:false,registered:false,nickname:''});
+  }else wx.cloud.callFunction({name:'memberHome'}).then(function(r){
    if(seq!==page._loadSeq)return;var result=r.result||{},m=result.member||{};
    page.setData({memberLoading:false,registered:!!result.registered,nickname:m.nickname||'红圈会员'});
    if(result.registered)wx.cloud.callFunction({name:'memberIdentity'}).catch(function(){/* Optional identity sync cannot block the home page. */});
@@ -29,6 +31,7 @@ Page({
  onCoverError:function(e){var i=Number(e.currentTarget.dataset.index);if(Number.isInteger(i)&&this.data.events[i]){var patch={};patch['events['+i+'].posterSrc']='';this.setData(patch);}},
  goActivities:function(){wx.navigateTo({url:'/pages/activities/index'});},
  goCheckIn:function(){
+  if(wx.getStorageSync('redcircle:signed-out'))return wx.switchTab({url:'/pages/profile/index'});
   if(this._scanning)return;
   this._scanning=true;
   wx.scanCode({

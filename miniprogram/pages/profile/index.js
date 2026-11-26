@@ -1,3 +1,4 @@
+const SIGNED_OUT='redcircle:signed-out';
 function displayScore(value){return typeof value==='number'&&isFinite(value)?String(value):'0';}
 Page({
  data:{loading:true,error:'',registered:false,nickname:'',avatarSrc:'',initial:'圈',skillDisplay:'—',charmDisplay:'—',isAdmin:false,adminExpanded:true,champions:[],championPreview:[],recapLabels:[],myActivities:[],activityPreview:[],showAllActivities:false,showAllChampions:false,activitiesLoading:false,activitiesError:'',championsLoading:false,championsError:''},
@@ -8,12 +9,17 @@ Page({
  loadProfile:function(){
   var page=this,seq=(page._seq||0)+1;page._seq=seq;
   page.setData({adminCode:'',adminCodeError:false,loading:true,error:'',registered:false,isAdmin:false,avatarSrc:'',nickname:'',skillDisplay:'—',charmDisplay:'—',champions:[],championPreview:[],recapLabels:[],myActivities:[],activityPreview:[],activitiesError:'',championsError:''});
+  if(wx.getStorageSync(SIGNED_OUT)){
+   page.setData({loading:false,signedOut:true});
+   return;
+  }
+  page.setData({signedOut:false});
   wx.cloud.callFunction({name:'memberHome'}).then(function(response){
    if(seq!==page._seq)return;
    var result=response.result||{},m=result.member||{};
    if(typeof result.registered!=='boolean')throw Error('INVALID_MEMBER_RESPONSE');
    var name=m.nickname||'红圈会员';
-   page.setData({loading:false,registered:result.registered,nickname:name,initial:Array.from(name)[0]||'圈',skillDisplay:displayScore(m.skillPoints)});
+   page.setData({loading:false,registered:result.registered,nickname:name,closureRequested:m.closureRequested===true,initial:Array.from(name)[0]||'圈',skillDisplay:displayScore(m.skillPoints)});
    if(!result.registered)return;
    if(m.avatarFileID){
     wx.cloud.getTempFileURL({fileList:[m.avatarFileID]}).then(function(f){var file=f.fileList&&f.fileList[0];if(seq===page._seq&&file&&file.tempFileURL)page.setData({avatarSrc:file.tempFileURL});}).catch(function(){/* An unavailable avatar must not hide the member card. */});
@@ -74,6 +80,39 @@ Page({
  toggleChampions:function(){var show=!this.data.showAllChampions;this.setData({showAllChampions:show,championPreview:show?this.data.champions:this.data.champions.slice(0,3)});},
  toggleAdmin:function(){this.setData({adminExpanded:!this.data.adminExpanded});},
  onAvatarError:function(){this.setData({avatarSrc:''});},
+ signIn:function(){
+  wx.removeStorageSync(SIGNED_OUT);
+  this.loadProfile();
+ },
+ signOut:function(){
+  wx.showModal({
+   title:'退出登录',content:'退出后可用当前微信账号重新登录红圈。',
+   success:r=>{
+    if(!r.confirm)return;
+    clearTimeout(this._codeTimer);
+    wx.setStorageSync(SIGNED_OUT,true);
+    this.loadProfile();
+   }
+  });
+ },
+ requestClosure:function(){
+  if(this.data.closureRequested||this.data.closureBusy)return;
+  wx.showModal({
+   title:'申请注销账户',content:'确认提交注销申请？申请提交后账户进入待处理状态。',
+   confirmText:'提交申请',confirmColor:'#a83232',
+   success:async r=>{
+    if(!r.confirm||this.data.closureBusy)return;
+    this.setData({closureBusy:true});
+    try{
+     const {result}=await wx.cloud.callFunction({name:'memberHome',data:{action:'requestClosure',confirm:true}});
+     if(!result||result.requested!==true)throw Error('CLOSURE_REQUEST_FAILED');
+     this.setData({closureRequested:true});
+     wx.showToast({title:'注销申请已提交',icon:'none'});
+    }catch(e){wx.showToast({title:'提交失败，请重试',icon:'none'});}
+    finally{this.setData({closureBusy:false});}
+   }
+  });
+ },
  openRegister:function(){wx.navigateTo({url:'/pages/register/index'});},
  editProfile:function(){wx.navigateTo({url:'/pages/register/index?mode=edit'});},
  openGrowth:function(){wx.navigateTo({url:'/pages/growth/index'});},

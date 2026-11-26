@@ -25,6 +25,7 @@
      <text>战力值与魅力值规则</text><text class="score-rules-chevron">›</text>
     </navigator>
    </block>
+   <view wx:elif="{{signedOut}}" class="guest-block"><button class="light-button" bindtap="signIn">微信登录</button></view>
    <view wx:else class="guest-block"><view class="guest-title">让每次相遇，留下成长。</view><view class="profile-tagline">创建个人档案，开始你的红圈旅程。</view><button class="light-button" bindtap="openRegister">加入红圈</button></view>
   </view>
  </view>
@@ -54,6 +55,10 @@
    <block wx:else><view wx:for="{{championPreview}}" wx:key="id" class="detail-row" data-id="{{item.id}}" bindtap="openChampion"><view class="honor-star {{item.place===2?'honor-silver':''}}">🏆</view><view class="row-content"><view class="row-title">{{item.trophy||'冠军荣誉'}}</view><view class="row-subtitle">{{item.eventName}}{{item.date?' · '+item.date:''}}</view></view><text class="row-chevron">›</text></view><view wx:if="{{!champions.length}}" class="section-state">获得的比赛奖杯会显示在这里。</view><view wx:if="{{champions.length>3||championNextOffset}}" class="expand-link" bindtap="toggleChampions">{{showAllChampions?'收起':'展开荣誉'}} {{showAllChampions?'⌃':'⌄'}}</view><view wx:if="{{showAllChampions&&championNextOffset}}" class="expand-link" bindtap="loadMoreChampions">加载更多奖杯</view></block>
   </view>
 
+  <view class="section-card account-actions">
+   <button bindtap="signOut">退出登录</button>
+   <button class="account-close" bindtap="requestClosure" disabled="{{closureRequested||closureBusy}}">{{closureRequested?'注销申请已提交':'注销账户'}}</button>
+  </view>
  </block>
  <view wx:if="{{!registered&&!loading&&!error}}" class="discover-card" bindtap="openActivities"><view class="section-name">先逛逛红圈活动 ↗</view><view class="shortcut-note">智力竞技 · 兴趣社交 · 青年共创</view></view>
  <view class="profile-footer">红圈青年 · 让兴趣与成长同行</view>
