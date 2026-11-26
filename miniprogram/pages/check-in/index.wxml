@@ -14,8 +14,8 @@
  <view wx:if="{{loading}}" class="status">正在加载…</view>
  <view wx:elif="{{done}}" class="status">{{done}}</view>
  <view wx:if="{{error}}" class="status">{{error}} <button size="mini" bindtap="loadStatus">重试</button></view>
- <block wx:if="{{!loading&&!busy}}">
+ <block wx:if="{{!loading&&!busy&&registered!==null}}">
   <button type="primary" bindtap="scan">扫门店签到码</button>
-  <button wx:if="{{!registered}}" bindtap="register">注册会员</button>
+  <button wx:if="{{registered===false}}" bindtap="register">注册会员</button>
  </block>
 </view>

@@ -1,5 +1,5 @@
 Page({
- data:{manage:false,registered:false,loading:true,busy:false,error:'',day:'',codePath:'',done:''},
+ data:{manage:false,registered:null,loading:true,busy:false,error:'',day:'',codePath:'',done:''},
  onLoad(options={}){
   this.token=this.readToken(options.scene);
   this.setData({manage:options.manage==='1'});
@@ -17,27 +17,29 @@ Page({
   }catch(e){return '';}
  },
  async loadStatus(){
-  this.setData({loading:true,error:''});
+  this.setData({loading:true,error:'',registered:null});
   try{
-   const {result}=await wx.cloud.callFunction({name:'activityAttendance',data:{action:'storeCheckInStatus'}});
+   const {result}=await wx.cloud.callFunction({name:'memberHome'});
    if(!result||typeof result.registered!=='boolean')throw Error('STATUS_UNAVAILABLE');
    this.setData({registered:result.registered});
    if(result.registered&&this.token)await this.checkIn();
-  }catch(e){this.setData({error:'暂时无法打开门店签到，请重试。'});}
+  }catch(e){this.setData({error:'暂时无法确认会员状态，请重试。'});}
   finally{this.setData({loading:false});}
  },
  register(){
+  if(this.data.registered!==false)return;
   wx.navigateTo({url:'/pages/register/index?from=check-in'+(this.token?'&scene='+this.token:'')});
  },
  scan(){
+  if(this.data.loading||this.data.registered===null)return;
   wx.scanCode({onlyFromCamera:true,success:scan=>{
    const scene=String(scan.path||'').match(/(?:\?|&)scene=([^&]+)/);
    const token=scene&&this.readToken(scene[1]);
    if(!token)return wx.showToast({title:'请扫描红圈门店签到码',icon:'none'});
    this.token=token;
    this.setData({done:'',error:''});
-   if(this.data.registered)this.checkIn();
-   else this.register();
+   if(this.data.registered===true)this.checkIn();
+   else if(this.data.registered===false)this.register();
   }});
  },
  async checkIn(){
