@@ -19,3 +19,17 @@
   <button wx:if="{{registered===false}}" bindtap="register">注册会员</button>
  </block>
 </view>
+
+<view wx:if="{{scanning}}" class="scanner">
+ <camera class="scan-camera" mode="scanCode" device-position="back" flash="{{torch?'torch':'off'}}" bindscancode="cameraScan" binderror="cameraError">
+  <cover-view class="scan-overlay">
+   <cover-view class="scan-frame"><cover-view class="scan-line"/></cover-view>
+   <cover-view class="scan-hint">请将门店签到二维码放入框内</cover-view>
+   <cover-view class="scan-actions">
+    <cover-view class="scan-action" bindtap="toggleTorch">{{torch?'关闭':'打开'}}手电筒</cover-view>
+    <cover-view class="scan-action" bindtap="nativeScan">微信扫码</cover-view>
+    <cover-view class="scan-action" bindtap="closeScanner">取消</cover-view>
+   </cover-view>
+  </cover-view>
+ </camera>
+</view>
