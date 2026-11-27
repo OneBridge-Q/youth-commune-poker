@@ -1,7 +1,8 @@
 <view wx:if="{{loading}}" class="card">正在生成荣誉海报…</view>
 <view wx:if="{{error}}" class="card">{{error}}</view>
 <view wx:if="{{ready}}" class="card">
- <canvas canvas-id="momentPoster" style="width:{{posterWidth}}px;height:{{posterHeight}}px;margin:auto;display:block;"></canvas>
+ <canvas wx:if="{{isSng}}" type="2d" id="sngMomentPoster" style="width:{{posterWidth}}px;height:{{posterHeight}}px;margin:auto;display:block;"></canvas>
+ <canvas wx:else canvas-id="momentPoster" style="width:{{posterWidth}}px;height:{{posterHeight}}px;margin:auto;display:block;"></canvas>
  <button type="primary" bindtap="sharePoster" disabled="{{!rendered}}" style="margin-top:24rpx">分享海报</button>
  <button bindtap="savePoster" disabled="{{!rendered}}" style="margin-top:16rpx">保存到相册</button>
 </view>
