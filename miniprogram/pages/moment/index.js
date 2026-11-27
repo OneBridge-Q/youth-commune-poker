@@ -20,12 +20,21 @@ Page({
    const posterWidth=Math.min(320,wx.getSystemInfoSync().windowWidth-56);
    const posterHeight=Math.round(posterWidth*(isSng?4/3:3/2));
    this.setData({loading:false,ready:true,isSng,posterWidth,posterHeight},()=>{
-    if(isSng){
-     const ctx=wx.createCanvasContext('momentPoster',this);
-     sngPoster.draw(ctx,item,details,posterWidth,posterHeight,()=>this.setData({rendered:true}));
-    }else this.draw(item);
+    if(isSng)this.drawSng(item,details);
+    else this.draw(item);
    });
   }catch(e){this.setData({loading:false,error:'无法获取已认证荣誉，可能尚未审核或已撤销'});}
+ },
+ drawSng(item,details){
+  wx.createSelectorQuery().select('#sngMomentPoster').node(async result=>{
+   try{
+    const canvas=result?.node;
+    if(!canvas)throw Error('POSTER_CANVAS_UNAVAILABLE');
+    await sngPoster.draw(canvas,item,details);
+    this.sngCanvas=canvas;
+    this.setData({rendered:true});
+   }catch(e){this.setData({ready:false,error:'生成海报失败，请返回后重试'});}
+  }).exec();
  },
  draw(item){
   const ctx=wx.createCanvasContext('momentPoster',this);
@@ -59,12 +68,16 @@ Page({
  },
  exportPoster(onReady){
   if(!this.data.rendered)return;
-  const options={canvasId:'momentPoster',success:res=>onReady(res.tempFilePath),
+  const options={success:res=>onReady(res.tempFilePath),
    fail:()=>wx.showToast({title:'生成失败，请重试',icon:'none'})};
   if(this.data.isSng){
+   options.canvas=this.sngCanvas;
+   options.width=sngPoster.WIDTH;
+   options.height=sngPoster.HEIGHT;
    options.destWidth=sngPoster.WIDTH;
    options.destHeight=sngPoster.HEIGHT;
-  }
+   options.fileType='png';
+  }else options.canvasId='momentPoster';
   wx.canvasToTempFilePath(options,this);
  },
  sharePoster(){

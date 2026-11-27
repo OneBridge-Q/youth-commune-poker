@@ -25,43 +25,56 @@ async function loadMemberDetails(){
  };
 }
 
-function draw(ctx,item,details,width,height,done){
- const template=TEMPLATES[item.place]||TEMPLATES[1];
- ctx.save();
- ctx.scale(width/WIDTH,height/HEIGHT);
- ctx.drawImage('/assets/posters/'+template.file+'.jpg',0,0,WIDTH,HEIGHT);
+function loadImage(canvas,src){
+ return new Promise((resolve,reject)=>{
+  const image=canvas.createImage();
+  image.onload=()=>resolve(image);
+  image.onerror=reject;
+  image.src=src;
+ });
+}
 
- if(details.avatar){
+async function draw(canvas,item,details){
+ const template=TEMPLATES[item.place]||TEMPLATES[1];
+ const [background,avatar]=await Promise.all([
+  loadImage(canvas,'/assets/posters/'+template.file+'.jpg'),
+  details.avatar?loadImage(canvas,details.avatar.path).catch(()=>null):null
+ ]);
+ // Render at export size so small QR modules survive the preview layout.
+ canvas.width=WIDTH;
+ canvas.height=HEIGHT;
+ const ctx=canvas.getContext('2d');
+ ctx.drawImage(background,0,0,WIDTH,HEIGHT);
+
+ if(avatar){
   const [x,y,r]=template.avatar;
-  const {path,width:imageWidth,height:imageHeight}=details.avatar;
+  const {width:imageWidth,height:imageHeight}=details.avatar;
   const side=Math.min(imageWidth,imageHeight);
   ctx.save();
   ctx.beginPath();
   ctx.arc(x,y,r,0,Math.PI*2);
   ctx.clip();
-  ctx.drawImage(path,(imageWidth-side)/2,(imageHeight-side)/2,side,side,x-r,y-r,r*2,r*2);
+  ctx.drawImage(avatar,(imageWidth-side)/2,(imageHeight-side)/2,side,side,x-r,y-r,r*2,r*2);
   ctx.restore();
  }
 
  const [x,y,w,h]=template.name;
- ctx.setFillStyle(template.color);
+ ctx.fillStyle=template.color;
  ctx.fillRect(x,y,w,h);
- ctx.setFillStyle('#fff3df');
- ctx.setTextBaseline('middle');
- ctx.setTextAlign('left');
- ctx.setFontSize(51);
+ ctx.fillStyle='#fff3df';
+ ctx.textBaseline='middle';
+ ctx.textAlign='left';
+ ctx.font='51px sans-serif';
  ctx.fillText(String(item.nickname||'会员'),x+6,y+h/2,w-12);
- ctx.setTextAlign('center');
+ ctx.textAlign='center';
  template.scores.forEach(([cx,cy],index)=>{
   const score=index===0?details.skill:details.charisma;
-  ctx.setFillStyle(template.color);
+  ctx.fillStyle=template.color;
   ctx.fillRect(cx-81,cy-23,162,48);
-  ctx.setFillStyle('#fff3df');
-  ctx.setFontSize(43);
+  ctx.fillStyle='#fff3df';
+  ctx.font='43px sans-serif';
   ctx.fillText(Number.isSafeInteger(score)&&score>=0?String(score):'—',cx,cy,146);
  });
- ctx.restore();
- ctx.draw(false,done);
 }
 
 module.exports={draw,loadMemberDetails,WIDTH,HEIGHT};
