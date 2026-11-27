@@ -1,5 +1,5 @@
 Page({
- data:{manage:false,registered:null,loading:true,busy:false,error:'',day:'',codePath:'',done:''},
+ data:{scanning:false,torch:false,manage:false,registered:null,loading:true,busy:false,error:'',day:'',codePath:'',done:''},
  onLoad(options={}){
   this.token=this.readToken(options.scene);
   this.setData({manage:options.manage==='1'});
@@ -8,7 +8,7 @@ Page({
   if(this.data.manage)this.loadCode();
   else this.loadStatus();
  },
- onHide(){if(this.data.manage)this.setData({codePath:'',day:''});},
+ onHide(){this.closeScanner();if(this.data.manage)this.setData({codePath:'',day:''});},
  onUnload(){clearTimeout(this.expiryTimer);},
  readToken(value){
   try{
@@ -31,16 +31,27 @@ Page({
   wx.navigateTo({url:'/pages/register/index?from=check-in'+(this.token?'&scene='+this.token:'')});
  },
  scan(){
-  if(this.data.loading||this.data.registered===null)return;
-  wx.scanCode({onlyFromCamera:true,success:scan=>{
-   const scene=String(scan.path||'').match(/(?:\?|&)scene=([^&]+)/);
-   const token=scene&&this.readToken(scene[1]);
-   if(!token)return wx.showToast({title:'请扫描红圈门店签到码',icon:'none'});
-   this.token=token;
-   this.setData({done:'',error:''});
-   if(this.data.registered===true)this.checkIn();
-   else if(this.data.registered===false)this.register();
-  }});
+  if(this.data.loading||this.data.busy||this.data.registered===null)return;
+  this.setData({scanning:true,torch:false});
+ },
+ closeScanner(){this.setData({scanning:false,torch:false});},
+ toggleTorch(){this.setData({torch:!this.data.torch});},
+ cameraError(){this.closeScanner();wx.showToast({title:'无法打开相机，请检查权限',icon:'none'});},
+ nativeScan(){
+  this.closeScanner();
+  wx.scanCode({onlyFromCamera:true,success:scan=>this.handleScan(scan)});
+ },
+ cameraScan(e){if(this.data.scanning)this.handleScan(e.detail);},
+ handleScan(scan){
+  if(this.data.busy)return;
+  const scene=String(scan.path||scan.result||'').match(/(?:\?|&)scene=([^&]+)/);
+  const token=scene&&this.readToken(scene[1]);
+  if(!token){this.closeScanner();wx.showToast({title:'请扫描红圈门店签到码',icon:'none'});return;}
+  this.closeScanner();
+  this.token=token;
+  this.setData({done:'',error:''});
+  if(this.data.registered===true)this.checkIn();
+  else if(this.data.registered===false)this.register();
  },
  async checkIn(){
   if(this.data.busy)return;
